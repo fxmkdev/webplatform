@@ -14,18 +14,33 @@
     "build": "tsup src/index.ts src/routes/* --format esm --dts"
   },
   "devDependencies": {
+    "@payloadcms/live-preview-react": "^3.54.0",
     "@react-router/dev": "^7.7.1",
     "@types/node": "^24.3.0",
+    "@types/react": "^19.1.12",
+    "i18next": "^25.4.2",
+    "react": "^19.1.1",
+    "react-i18next": "^15.7.3",
     "react-router": "^7.7.1",
+    "remix-i18next": "^7.3.0",
     "tsup": "^8.5.0",
     "typescript": "^5.8.3"
   },
   "packageManager": "pnpm@10.3.0+sha512.ee592eda8815a8a293c206bb0917c4bb0ff274c50def7cbc17be05ec641fc2d1b02490ce660061356bd0d126a4d7eb2ec8830e6959fb8a447571c631d5a2442d",
   "peerDependencies": {
-    "@react-router/dev": "^7.7.1",
-    "react-router": "^7.7.1"
+    "@payloadcms/live-preview-react": "^3",
+    "@react-router/dev": "^7",
+    "i18next": "^25",
+    "react": "^19",
+    "react-i18next": "^15",
+    "react-router": "^7",
+    "remix-i18next": "^7"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.7",
+    "@heroicons/react": "^2.2.0",
+    "i18next-browser-languagedetector": "^8.2.0",
+    "i18next-http-backend": "^3.0.2",
     "redis": "^5.8.1"
   }
 }

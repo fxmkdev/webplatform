@@ -37,16 +37,6 @@ export function getRequestUrl(request: Request) {
   return url;
 }
 
-// TODO avoid using environment variables here
-export function getCanonicalRequestUrl(request: Request) {
-  if (!process.env.CANONICAL_HOSTNAME) {
-    throw new Error("Missing CANONICAL_HOSTNAME");
-  }
-  const url = getRequestUrl(request);
-  url.hostname = process.env.CANONICAL_HOSTNAME;
-  return url;
-}
-
 export function toRelativeUrl(urlOrLocation: URL | Location) {
   if (urlOrLocation instanceof URL) {
     return urlOrLocation.toString().replace(urlOrLocation.origin, "");

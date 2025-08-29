@@ -5,80 +5,81 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
+  type LinksFunction,
+  type MetaFunction,
   type unstable_MiddlewareFunction,
 } from "react-router";
 
-import type { Route } from "./+types/root";
-import "./app.css";
-import { initializeCms, initializeSessions } from "@fxmk/frontend";
+import {
+  initializeCms,
+  initializeSessions,
+  initializeConfig,
+  loader,
+  AnalyticsScript,
+  OptInLivePreview,
+  BRANDS_DEPTH,
+} from "@fxmk/frontend";
 
-export const links: Route.LinksFunction = () => [
-  { rel: "preconnect", href: "https://fonts.googleapis.com" },
+export { loader, handle } from "@fxmk/frontend";
+import styles from "./global.css?url";
+import { useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
+import { ThemeProvider } from "./themes";
+
+export const links: LinksFunction = () => [
+  { rel: "stylesheet", href: styles },
   {
     rel: "preconnect",
     href: "https://fonts.gstatic.com",
-    crossOrigin: "anonymous",
   },
   {
     rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
+    href: "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",
+  },
+  {
+    rel: "stylesheet",
+    href: "https://fonts.googleapis.com/css2?family=Playfair%20Display:wght@400..500&display=swap",
   },
 ];
 
-export function Layout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en">
-      <head>
-        <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <Meta />
-        <Links />
-      </head>
-      <body>
-        {children}
-        <ScrollRestoration />
-        <Scripts />
-      </body>
-    </html>
-  );
-}
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  const brandId = data?.brand?.id ?? "puerta";
+  return [
+    {
+      tagName: "link",
+      rel: "icon",
+      type: "image/png",
+      sizes: "96x96",
+      href: `/assets/${brandId}/favicon-96x96.png`,
+    },
+    {
+      tagName: "link",
+      rel: "icon",
+      type: "image/svg+xml",
+      href: `/assets/${brandId}/favicon.svg`,
+    },
+    {
+      tagName: "link",
+      rel: "shortcut icon",
+      href: `/assets/${brandId}/favicon.ico`,
+    },
+    {
+      tagName: "link",
+      rel: "apple-touch-icon",
+      sizes: "180x180",
+      href: `/assets/${brandId}/apple-touch-icon.png`,
+    },
+    {
+      tagName: "link",
+      rel: "manifest",
+      sizes: "180x180",
+      href: `/assets/${brandId}/site.webmanifest`,
+    },
+  ];
+};
 
-export default function App() {
-  return <Outlet />;
-}
-
-export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let message = "Oops!";
-  let details = "An unexpected error occurred.";
-  let stack: string | undefined;
-
-  if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? "404" : "Error";
-    details =
-      error.status === 404
-        ? "The requested page could not be found."
-        : error.statusText || details;
-  } else if (import.meta.env.DEV && error && error instanceof Error) {
-    details = error.message;
-    stack = error.stack;
-  }
-
-  return (
-    <main className="pt-16 p-4 container mx-auto">
-      <h1>{message}</h1>
-      <p>{details}</p>
-      {stack && (
-        <pre className="w-full p-4 overflow-x-auto">
-          <code>{stack}</code>
-        </pre>
-      )}
-    </main>
-  );
-}
-
-const middleware: unstable_MiddlewareFunction = function middleware({
-  request,
-}) {
+const middleware: unstable_MiddlewareFunction = function middleware({}) {
   initializeCms({
     apiKey: process.env.PAYLOAD_CMS_API_KEY!,
     baseUrl: process.env.PAYLOAD_CMS_BASE_URL!,
@@ -88,6 +89,97 @@ const middleware: unstable_MiddlewareFunction = function middleware({
     canonicalHostname: process.env.CANONICAL_HOSTNAME!,
     sessionSecret: process.env.SESSION_SECRET!,
   });
+  initializeConfig({
+    canonicalHostname: process.env.CANONICAL_HOSTNAME!,
+  });
 };
 
 export const unstable_middleware = [middleware];
+
+export default function App(): ReactNode {
+  const {
+    brand,
+    settings,
+    // footer, // TODO fix this
+    analyticsDomain,
+    allBrands,
+    isAuthorized,
+    adminLocale,
+    environment,
+    publishedLocales,
+  } = useLoaderData<typeof loader>();
+  const { i18n } = useTranslation();
+
+  const [headerHeight, setHeaderHeight] = useState(0);
+
+  return (
+    <html
+      lang={i18n.language}
+      dir={i18n.dir()}
+      style={{ scrollPaddingTop: getScrollTopPadding(headerHeight) }}
+    >
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <Meta />
+        <Links />
+        <AnalyticsScript analyticsDomain={analyticsDomain} />
+      </head>
+      <body className="bg-white text-neutral-900 antialiased">
+        {/* <GoogleMapsAPIProvider
+          apiKey={environment.googleMapsApiKey}
+          language={
+            publishedLocales.find((l) => l.id === i18n.language)
+              ?.googleMapsLanguage ?? undefined
+          }
+          region={settings.maps?.region || undefined}
+        > */}
+        <ThemeProvider brandId={brand.id}>
+          {/*    {settings.maintenanceScreen?.show && isAuthorized && (
+              <PreviewBar adminLocale={adminLocale!} />
+            )}*/}
+          <OptInLivePreview
+            path={`brands/${brand.id}`}
+            data={brand}
+            depth={BRANDS_DEPTH}
+          >
+            {(brand) => (
+              <>
+                {/* {isAuthorized && (
+                  <Header
+                    brand={brand}
+                    allBrands={allBrands}
+                    publishedLocales={publishedLocales}
+                    onHeightChanged={setHeaderHeight}
+                  />
+                )} */}
+                <main>
+                  <Outlet />
+                </main>
+                {/* {isAuthorized && (
+                  <Footer
+                    brand={brand}
+                    allBrands={allBrands}
+                    content={footer}
+                  />
+                )} */}
+              </>
+            )}
+          </OptInLivePreview>
+        </ThemeProvider>
+        {/* </GoogleMapsAPIProvider> */}
+
+        <ScrollRestoration />
+        <Scripts />
+      </body>
+    </html>
+  );
+}
+
+const ADDITIONAL_SCROLL_PADDING = 32;
+
+function getScrollTopPadding(headerHeight: number) {
+  return headerHeight + ADDITIONAL_SCROLL_PADDING;
+}
+
+// export const ErrorBoundary = GlobalErrorBoundary;

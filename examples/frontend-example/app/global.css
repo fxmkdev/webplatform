@@ -1,0 +1,146 @@
+@import "tailwindcss";
+
+@plugin '@tailwindcss/forms';
+
+@theme {
+  --color-*: initial;
+  --color-inherit: inherit;
+  --color-black: #000;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+  --color-white: #fff;
+
+  --color-puerta-50: #f8f5f1;
+  --color-puerta-100: #ede6dc;
+  --color-puerta-200: #e2d0b6;
+  --color-puerta-300: #cba671;
+  --color-puerta-400: #c48e4f;
+  --color-puerta-500: #b37332;
+  --color-puerta-600: #986634;
+  --color-puerta-700: #754e27;
+  --color-puerta-800: #603f1f;
+  --color-puerta-900: #4d2e0f;
+  --color-puerta-950: #43260a;
+
+  --color-azul-50: #eff6ff;
+  --color-azul-100: #dbeafe;
+  --color-azul-200: #bfdbfe;
+  --color-azul-300: #93c5fd;
+  --color-azul-400: #60a5fa;
+  --color-azul-500: #3b82f6;
+  --color-azul-600: #2563eb;
+  --color-azul-700: #1d4ed8;
+  --color-azul-800: #1e40af;
+  --color-azul-900: #1e3a8a;
+  --color-azul-950: #172554;
+
+  --color-aqua-50: #f0fdfa;
+  --color-aqua-100: #ccfbf1;
+  --color-aqua-200: #99f6e4;
+  --color-aqua-300: #5eead4;
+  --color-aqua-400: #2dd4bf;
+  --color-aqua-500: #14b8a6;
+  --color-aqua-600: #0d9488;
+  --color-aqua-700: #0f766e;
+  --color-aqua-800: #115e59;
+  --color-aqua-900: #134e4a;
+  --color-aqua-950: #042f2e;
+
+  --color-neutral-50: #f9fafb;
+  --color-neutral-100: #f3f4f6;
+  --color-neutral-200: #e5e7eb;
+  --color-neutral-300: #d1d5db;
+  --color-neutral-400: #9ca3af;
+  --color-neutral-500: #6b7280;
+  --color-neutral-600: #4b5563;
+  --color-neutral-700: #374151;
+  --color-neutral-800: #1f2937;
+  --color-neutral-900: #111827;
+  --color-neutral-950: #030712;
+
+  --color-accent-neutral-50: #fffbeb;
+  --color-accent-neutral-100: #fef3c7;
+  --color-accent-neutral-200: #fde68a;
+  --color-accent-neutral-300: #fcd34d;
+  --color-accent-neutral-400: #fbbf24;
+  --color-accent-neutral-500: #f59e0b;
+  --color-accent-neutral-600: #d97706;
+  --color-accent-neutral-700: #b45309;
+  --color-accent-neutral-800: #92400e;
+  --color-accent-neutral-900: #78350f;
+  --color-accent-neutral-950: #451a03;
+
+  --color-accent-positive-50: #f0fdf4;
+  --color-accent-positive-100: #dcfce7;
+  --color-accent-positive-200: #bbf7d0;
+  --color-accent-positive-300: #86efac;
+  --color-accent-positive-400: #4ade80;
+  --color-accent-positive-500: #22c55e;
+  --color-accent-positive-600: #16a34a;
+  --color-accent-positive-700: #15803d;
+  --color-accent-positive-800: #166534;
+  --color-accent-positive-900: #14532d;
+  --color-accent-positive-950: #052e16;
+
+  --color-accent-negative-50: #fef2f2;
+  --color-accent-negative-100: #fee2e2;
+  --color-accent-negative-200: #fecaca;
+  --color-accent-negative-300: #fca5a5;
+  --color-accent-negative-400: #f87171;
+  --color-accent-negative-500: #ef4444;
+  --color-accent-negative-600: #dc2626;
+  --color-accent-negative-700: #b91c1c;
+  --color-accent-negative-800: #991b1b;
+  --color-accent-negative-900: #7f1d1d;
+  --color-accent-negative-950: #450a0a;
+
+  --font-sans:
+    Lato, ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-serif:
+    Playfair Display, ui-serif, Georgia, Cambria, "Times New Roman", Times,
+    serif;
+
+  --font-weight-inherit: inherit;
+}
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+}
+
+li:has(> ul:first-child),
+li:has(> ol:first-child) {
+  list-style-type: none;
+  counter-increment: list-counter 0;
+}
+
+ol {
+  counter-reset: list-counter;
+}
+
+ol > li {
+  counter-increment: list-counter;
+}
+
+ol > li:has(> ul:first-child)::marker,
+ol > li:has(> ol:first-child)::marker {
+  content: "";
+}
+
+ol > li::marker {
+  content: counter(list-counter) ". ";
+}

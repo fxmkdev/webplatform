@@ -1,8 +1,9 @@
 import { LocaleConfig } from "../cms-plugin-types";
-import { buildLocalizedRelativeUrl, getCanonicalRequestUrl } from "../routing";
+import { buildLocalizedRelativeUrl } from "../routing";
 import { LoaderFunctionArgs } from "react-router";
 import { isAuthenticated } from "../auth.server";
 import { cms } from "../cms.server";
+import { getCanonicalRequestUrl } from "../routing.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const settings = await cms().getSettings(request);

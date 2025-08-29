@@ -5,9 +5,11 @@ import { join, dirname } from "path";
 const filename = fileURLToPath(import.meta.url);
 const directory = dirname(filename);
 
-const { route } = relative(join(directory, "routes"));
+const { index, route } = relative(join(directory, "routes"));
 
 export const routes = [
+  index("./home.js"),
+  route("/*", "./page.js"),
   route("/api/version", "./version.js"),
   route("/sitemap.xml", "./sitemap.js"),
   route("/robots.txt", "./robots.js"),

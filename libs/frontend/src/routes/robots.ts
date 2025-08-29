@@ -1,5 +1,5 @@
 import { LoaderFunctionArgs } from "react-router";
-import { getCanonicalRequestUrl } from "../routing";
+import { getCanonicalRequestUrl } from "../routing.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const content = `User-Agent: *
