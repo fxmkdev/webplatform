@@ -1,23 +1,71 @@
-import { MetaFunction, useLoaderData, LoaderFunctionArgs } from "react-router";
-import { OptInLivePreview } from "../live-preview";
-import { Page } from "../page";
-import { getPageTitle } from "../meta";
+import { LoaderFunctionArgs, MetaFunction } from "react-router";
+import { SerializeFromLoader } from "./types";
 import {
   getCanonicalRequestUrl,
   handleIncomingRequest,
   handlePathname,
-} from "../routing.server";
-import { buildLocalizedRelativeUrl, getRequestUrl, toUrl } from "../routing";
-import { SerializeFromLoader } from "../types";
-import { type loader as rootLoader } from "../root-utils";
-import { toImagekitTransformationString } from "../image";
-import { getAltFromMedia } from "../media";
-import { PAGE_DEPTH } from "../cms";
-import { cms } from "../cms.server";
-import { LocaleConfig } from "../cms-plugin-types";
-import { ReactNode } from "react";
+} from "./routing.server";
+import { buildLocalizedRelativeUrl, getRequestUrl, toUrl } from "./routing";
+import { LocaleConfig } from "./cms-plugin-types";
+import { getPageTitle } from "./meta";
+import { toImagekitTransformationString } from "./image";
+import { cms } from "./cms.server";
+import { type loader as rootLoader } from "./root-utils";
+import { getAltFromMedia } from "./media";
 
-export const meta: MetaFunction<typeof loader> = ({ data, matches }) => {
+export async function pageLoader({ request }: LoaderFunctionArgs) {
+  const { pageUrl, locale } = await handleIncomingRequest(request);
+
+  const requestUrl = getRequestUrl(request);
+
+  const content = await handlePathname(
+    request,
+    toUrl(pageUrl).pathname,
+    locale,
+  );
+  if (!content) {
+    throw new Response(null, { status: 404, statusText: "Not Found" });
+  }
+  const dataPath = `pages/${content.id}`;
+  const settings = await cms().getSettings(request);
+  const publishedLocaleCodes = (
+    settings.publishedLocales.publishedLocales as LocaleConfig[]
+  ).map((l) => l.id);
+  const alternateUrlsByLocale = await getAlternateHrefsByLocale(
+    request,
+    content.pathname,
+    publishedLocaleCodes,
+  );
+
+  const fallbackLocaleCode = (
+    settings.publishedLocales.fallbackLocale as LocaleConfig
+  ).id;
+
+  return {
+    origin: requestUrl.origin,
+    canonicalUrl: getCanonicalRequestUrl(request).href,
+    pageUrl,
+    dataPath,
+    content,
+    publishedLocaleCodes,
+    fallbackLocaleCode,
+    alternateUrls: [
+      ...Object.entries(alternateUrlsByLocale).map(([locale, href]) => ({
+        href,
+        hrefLang: locale,
+      })),
+      {
+        href: alternateUrlsByLocale[fallbackLocaleCode],
+        hrefLang: "x-default",
+      },
+    ],
+  };
+}
+
+export const pageMeta: MetaFunction<typeof pageLoader> = ({
+  data,
+  matches,
+}) => {
   if (!data) throw new Error("No loader data");
 
   const rootLoaderData = matches.find((m) => m.id === "root")
@@ -93,7 +141,7 @@ export const meta: MetaFunction<typeof loader> = ({ data, matches }) => {
 };
 
 function getTwitterCardImageMeta(
-  data: SerializeFromLoader<typeof loader>,
+  data: SerializeFromLoader<typeof pageLoader>,
   rootLoaderData: SerializeFromLoader<typeof rootLoader>,
 ): { name: string; content: string }[] {
   const image = data.content.seo?.image;
@@ -118,7 +166,7 @@ function getTwitterCardImageMeta(
 }
 
 function getOpenGraphImageMeta(
-  data: SerializeFromLoader<typeof loader>,
+  data: SerializeFromLoader<typeof pageLoader>,
   rootLoaderData: SerializeFromLoader<typeof rootLoader>,
 ): { name: string; content: string }[] {
   const image = data.content.seo?.image;
@@ -149,7 +197,7 @@ function getOpenGraphImageMeta(
 }
 
 function getSocialImageUrl(
-  data: SerializeFromLoader<typeof loader>,
+  data: SerializeFromLoader<typeof pageLoader>,
   rootLoaderData: SerializeFromLoader<typeof rootLoader>,
   width: number,
   height: number,
@@ -162,65 +210,6 @@ function getSocialImageUrl(
   if (!image) return "";
 
   return `${rootLoaderData.environment.imagekitBaseUrl.toString()}/${toImagekitTransformationString({ width, height })}/${image.filename}`;
-}
-
-export async function loader({ request }: LoaderFunctionArgs) {
-  const { pageUrl, locale } = await handleIncomingRequest(request);
-
-  const requestUrl = getRequestUrl(request);
-
-  const content = await handlePathname(
-    request,
-    toUrl(pageUrl).pathname,
-    locale,
-  );
-  if (!content) {
-    throw new Response(null, { status: 404, statusText: "Not Found" });
-  }
-  const dataPath = `pages/${content.id}`;
-  const settings = await cms().getSettings(request);
-  const publishedLocaleCodes = (
-    settings.publishedLocales.publishedLocales as LocaleConfig[]
-  ).map((l) => l.id);
-  const alternateUrlsByLocale = await getAlternateHrefsByLocale(
-    request,
-    content.pathname,
-    publishedLocaleCodes,
-  );
-
-  const fallbackLocaleCode = (
-    settings.publishedLocales.fallbackLocale as LocaleConfig
-  ).id;
-
-  return {
-    origin: requestUrl.origin,
-    canonicalUrl: getCanonicalRequestUrl(request).href,
-    pageUrl,
-    dataPath,
-    content,
-    publishedLocaleCodes,
-    fallbackLocaleCode,
-    alternateUrls: [
-      ...Object.entries(alternateUrlsByLocale).map(([locale, href]) => ({
-        href,
-        hrefLang: locale,
-      })),
-      {
-        href: alternateUrlsByLocale[fallbackLocaleCode],
-        hrefLang: "x-default",
-      },
-    ],
-  };
-}
-
-export default function Route(): ReactNode {
-  const { dataPath, content } = useLoaderData<typeof loader>();
-
-  return (
-    <OptInLivePreview path={dataPath} data={content} depth={PAGE_DEPTH}>
-      {(data) => <Page content={data} />}
-    </OptInLivePreview>
-  );
 }
 
 async function getAlternateHrefsByLocale(

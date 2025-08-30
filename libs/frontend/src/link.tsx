@@ -5,7 +5,7 @@ import {
 } from "react-router";
 
 export type LinkProps = Omit<ReactRouterLinkProps, "to"> & {
-  ref: React.Ref<HTMLAnchorElement>;
+  ref?: React.Ref<HTMLAnchorElement>;
   to: string;
 };
 

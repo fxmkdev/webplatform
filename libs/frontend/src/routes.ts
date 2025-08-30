@@ -9,7 +9,6 @@ const { index, route } = relative(join(directory, "routes"));
 
 export const routes = [
   index("./home.js"),
-  route("/*", "./page.js"),
   route("/api/version", "./version.js"),
   route("/sitemap.xml", "./sitemap.js"),
   route("/robots.txt", "./robots.js"),

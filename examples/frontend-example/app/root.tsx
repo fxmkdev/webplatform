@@ -1,5 +1,5 @@
 import {
-  isRouteErrorResponse,
+  Link,
   Links,
   Meta,
   Outlet,
@@ -19,13 +19,15 @@ import {
   AnalyticsScript,
   OptInLivePreview,
   BRANDS_DEPTH,
+  type Brand,
+  PageLink,
 } from "@fxmk/frontend";
 
 export { loader, handle } from "@fxmk/frontend";
 import styles from "./global.css?url";
-import { useState, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { ThemeProvider } from "./themes";
+import { link } from "fs";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: styles },
@@ -42,42 +44,6 @@ export const links: LinksFunction = () => [
     href: "https://fonts.googleapis.com/css2?family=Playfair%20Display:wght@400..500&display=swap",
   },
 ];
-
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
-  const brandId = data?.brand?.id ?? "puerta";
-  return [
-    {
-      tagName: "link",
-      rel: "icon",
-      type: "image/png",
-      sizes: "96x96",
-      href: `/assets/${brandId}/favicon-96x96.png`,
-    },
-    {
-      tagName: "link",
-      rel: "icon",
-      type: "image/svg+xml",
-      href: `/assets/${brandId}/favicon.svg`,
-    },
-    {
-      tagName: "link",
-      rel: "shortcut icon",
-      href: `/assets/${brandId}/favicon.ico`,
-    },
-    {
-      tagName: "link",
-      rel: "apple-touch-icon",
-      sizes: "180x180",
-      href: `/assets/${brandId}/apple-touch-icon.png`,
-    },
-    {
-      tagName: "link",
-      rel: "manifest",
-      sizes: "180x180",
-      href: `/assets/${brandId}/site.webmanifest`,
-    },
-  ];
-};
 
 const middleware: unstable_MiddlewareFunction = function middleware({}) {
   initializeCms({
@@ -110,14 +76,8 @@ export default function App(): ReactNode {
   } = useLoaderData<typeof loader>();
   const { i18n } = useTranslation();
 
-  const [headerHeight, setHeaderHeight] = useState(0);
-
   return (
-    <html
-      lang={i18n.language}
-      dir={i18n.dir()}
-      style={{ scrollPaddingTop: getScrollTopPadding(headerHeight) }}
-    >
+    <html lang={i18n.language} dir={i18n.dir()}>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -134,39 +94,24 @@ export default function App(): ReactNode {
           }
           region={settings.maps?.region || undefined}
         > */}
-        <ThemeProvider brandId={brand.id}>
-          {/*    {settings.maintenanceScreen?.show && isAuthorized && (
+        {/*    {settings.maintenanceScreen?.show && isAuthorized && (
               <PreviewBar adminLocale={adminLocale!} />
             )}*/}
-          <OptInLivePreview
-            path={`brands/${brand.id}`}
-            data={brand}
-            depth={BRANDS_DEPTH}
-          >
-            {(brand) => (
-              <>
-                {/* {isAuthorized && (
-                  <Header
-                    brand={brand}
-                    allBrands={allBrands}
-                    publishedLocales={publishedLocales}
-                    onHeightChanged={setHeaderHeight}
-                  />
-                )} */}
-                <main>
-                  <Outlet />
-                </main>
-                {/* {isAuthorized && (
-                  <Footer
-                    brand={brand}
-                    allBrands={allBrands}
-                    content={footer}
-                  />
-                )} */}
-              </>
-            )}
-          </OptInLivePreview>
-        </ThemeProvider>
+        <OptInLivePreview
+          path={`brands/${brand.id}`}
+          data={brand}
+          depth={BRANDS_DEPTH}
+        >
+          {(brand) => (
+            <>
+              {isAuthorized && <Header brand={brand} />}
+              <main>
+                <Outlet />
+              </main>
+              {isAuthorized && <Footer brand={brand} />}
+            </>
+          )}
+        </OptInLivePreview>
         {/* </GoogleMapsAPIProvider> */}
 
         <ScrollRestoration />
@@ -176,10 +121,41 @@ export default function App(): ReactNode {
   );
 }
 
-const ADDITIONAL_SCROLL_PADDING = 32;
+function Header({ brand }: { brand: Brand }) {
+  return (
+    <header>
+      <nav>
+        <ul className="flex gap-2">
+          {brand.navLinks?.map((navLink) => (
+            <li key={navLink.id}>
+              <PageLink link={navLink.link}>{navLink.label}</PageLink>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </header>
+  );
+}
 
-function getScrollTopPadding(headerHeight: number) {
-  return headerHeight + ADDITIONAL_SCROLL_PADDING;
+function Footer({ brand }: { brand: Brand }) {
+  return (
+    <footer>
+      <ul className="flex gap-4">
+        {brand.footer?.linkGroups?.map((linkGroup) => (
+          <li key={linkGroup.id}>
+            <h3>{linkGroup.title}</h3>
+            <ul>
+              {linkGroup.links?.map((link) => (
+                <li key={link.id}>
+                  <PageLink link={link.link}>{link.label}</PageLink>
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))}
+      </ul>
+    </footer>
+  );
 }
 
 // export const ErrorBoundary = GlobalErrorBoundary;
