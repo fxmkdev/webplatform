@@ -3,8 +3,6 @@ import type { Block } from "payload";
 import { imageField } from "../../fields/image.js";
 import { overlayTitleField } from "../../fields/overlay-title.js";
 
-const optionalImageField = imageField({ required: false });
-
 export const HeroVideoBlock: Block = {
   slug: "HeroVideo",
   fields: [
@@ -27,21 +25,21 @@ export const HeroVideoBlock: Block = {
       relationTo: "media",
       required: true,
     },
-    {
-      ...optionalImageField,
+    imageField({
       name: "previewImage",
       admin: {
-        ...optionalImageField.admin,
         description: {
           en: "The preview image is shown while the video is still loading. It should be the first frame of the video to provide a seamless transition.",
           es: "La imagen de vista previa se muestra mientras el video aún se está cargando. Debe ser el primer fotograma del video para proporcionar una transición sin interrupciones.",
         },
+        position: "sidebar",
       },
       label: {
         en: "Preview Image",
         es: "Imagen de vista previa",
       },
-    },
+      required: false,
+    }),
     overlayTitleField({ optional: true }),
   ],
   interfaceName: "HeroVideo",
