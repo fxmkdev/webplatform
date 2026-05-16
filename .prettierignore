@@ -2,6 +2,7 @@
 **/build/
 **/dist/
 **/node_modules/
+**/.pnpm-store/
 **/temp/
 LICENSE.md
 examples/cms-example/src/app/(payload)/admin/importMap.js
