@@ -7,7 +7,7 @@ describe("cn", () => {
     expect(cn("button", "button--primary")).toBe("button button--primary");
   });
 
-  it("omits falsey and boolean-only values", () => {
+  it("omits falsy and boolean-only values", () => {
     expect(cn("button", false, null, undefined, true, "")).toBe("button");
   });
 

@@ -2,7 +2,7 @@
   "scripts": {
     "build": "pnpm -r --if-present run build",
     "check": "pnpm format:check && pnpm lint && pnpm test",
-    "format:check": "pnpm -r --if-present run check-format",
+    "format:check": "prettier --check .",
     "lint": "pnpm -r --if-present run lint",
     "test": "pnpm -r --if-present run test:int"
   },

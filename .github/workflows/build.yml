@@ -112,6 +112,7 @@ jobs:
     name: Create release
     runs-on: ubuntu-latest
     needs:
+      - quality
       - cms-plugin-build
       - common-build
       - releaser-build
