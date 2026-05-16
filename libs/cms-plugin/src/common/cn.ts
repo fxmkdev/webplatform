@@ -5,7 +5,7 @@ export function cn(...args: ClassNameConfig[]): string {
     .join(" ");
 }
 
-function isApplicable(arg: ClassNameConfig): arg is string | object {
+function isApplicable(arg: ClassNameConfig): arg is object | string {
   return !!arg && arg !== true;
 }
 
@@ -15,4 +15,4 @@ function objectToClasses(obj: object): string[] {
     .map(([className]) => className);
 }
 
-type ClassNameConfig = boolean | undefined | null | string | object;
+type ClassNameConfig = boolean | null | object | string | undefined;
