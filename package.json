@@ -1,4 +1,11 @@
 {
+  "scripts": {
+    "build": "pnpm -r --if-present run build",
+    "check": "pnpm format:check && pnpm lint && pnpm test",
+    "format:check": "prettier --check .",
+    "lint": "pnpm -r --if-present run lint",
+    "test": "pnpm -r --if-present run test:int"
+  },
   "packageManager": "pnpm@10.3.0+sha512.ee592eda8815a8a293c206bb0917c4bb0ff274c50def7cbc17be05ec641fc2d1b02490ce660061356bd0d126a4d7eb2ec8830e6959fb8a447571c631d5a2442d",
   "devDependencies": {
     "@fxmk/releaser": "^0.0.2-main.60",

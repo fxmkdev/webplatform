@@ -1,0 +1,9 @@
+**/.next/
+**/build/
+**/dist/
+**/node_modules/
+**/temp/
+LICENSE.md
+examples/cms-example/src/app/(payload)/admin/importMap.js
+examples/cms-example/src/payload-types.ts
+pnpm-lock.yaml
