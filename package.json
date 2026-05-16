@@ -16,6 +16,35 @@
       "sharp",
       "esbuild",
       "unrs-resolver"
-    ]
+    ],
+    "overrides": {
+      "@payloadcms/db-mongodb": "3.79.1",
+      "@payloadcms/graphql": "3.79.1",
+      "@payloadcms/next": "3.79.1",
+      "@payloadcms/richtext-lexical": "3.79.1",
+      "@payloadcms/storage-s3": "3.79.1",
+      "@payloadcms/translations": "3.79.1",
+      "@payloadcms/ui": "3.79.1",
+      "@playwright/test": "1.55.1",
+      "axios": "1.15.2",
+      "defu": "6.1.5",
+      "fast-uri@3.0.6": "3.1.2",
+      "fast-xml-parser": "5.5.6",
+      "flatted": "3.4.2",
+      "immutable": "4.3.8",
+      "lodash": "4.18.0",
+      "minimatch@3.1.2": "3.1.4",
+      "minimatch@3.1.3": "3.1.4",
+      "minimatch@9.0.5": "9.0.7",
+      "mongoose": "8.22.1",
+      "payload": "3.79.1",
+      "picomatch@2.3.1": "2.3.2",
+      "picomatch@4.0.3": "4.0.4",
+      "playwright": "1.55.1",
+      "rollup": "4.59.0",
+      "sucrase>glob": "10.5.0",
+      "undici": "7.24.0",
+      "vite": "7.3.2"
+    }
   }
 }
