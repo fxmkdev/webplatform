@@ -6,7 +6,7 @@ on:
   workflow_call:
 
 env:
-  FLYCTL_VERSION: 0.3.95
+  FLYCTL_VERSION: 0.4.52
 
 jobs:
   clean-preview:
