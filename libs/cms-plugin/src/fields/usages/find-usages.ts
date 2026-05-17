@@ -2,12 +2,7 @@ import type {
   SerializedEditorState,
   SerializedLexicalNode,
 } from "@payloadcms/richtext-lexical/lexical";
-import type {
-  CollectionSlug,
-  Field,
-  Payload,
-  TypedLocale,
-} from "payload";
+import type { CollectionSlug, Field, Payload, TypedLocale } from "payload";
 
 import type {
   LinkElementNode,
