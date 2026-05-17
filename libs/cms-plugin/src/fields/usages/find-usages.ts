@@ -4,7 +4,6 @@ import type {
 } from "@payloadcms/richtext-lexical/lexical";
 import type {
   CollectionSlug,
-  DataFromCollectionSlug,
   Field,
   Payload,
   TypedLocale,
@@ -47,10 +46,7 @@ export async function findUsages(
         }
 
         return items.docs.flatMap((item) => {
-          const title = (
-            item as DataFromCollectionSlug<CollectionSlug> &
-              Record<string, unknown>
-          )[collectionConfig.admin.useAsTitle!] as
+          const title = item[collectionConfig.admin.useAsTitle!] as
             | Record<string, string>
             | string;
           return findItemUsagesOnCollection(

@@ -1,4 +1,4 @@
-import type { GroupField, RowField, TextField } from "payload";
+import type { GroupField, RowField } from "payload";
 
 import { validateUrl } from "@payloadcms/richtext-lexical";
 import { text } from "payload/shared";
@@ -83,7 +83,7 @@ export function linkField({
 
           return true;
         },
-      } as TextField,
+      },
     ],
     interfaceName: "NewLink", // TODO rename interface once Link collection is removed
     label: translated("cmsPlugin:fields:link:label"),

@@ -24,7 +24,7 @@ const eslintConfig = [
     },
   },
   {
-    ignores: [".next/"],
+    ignores: [".next/", "eslint.config.mjs"],
   },
 ];
 

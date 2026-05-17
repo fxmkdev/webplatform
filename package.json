@@ -45,7 +45,19 @@
       "yaml@1.10.2": "1.10.3",
       "@eslint/plugin-kit@0.2.8": "0.3.5",
       "ajv@6.12.6": "6.15.0",
-      "brace-expansion@1.1.12": "1.1.14"
+      "brace-expansion@1.1.12": "1.1.14",
+      "typescript-eslint": "8.59.3",
+      "@typescript-eslint/eslint-plugin": "8.59.3",
+      "@typescript-eslint/parser": "8.59.3",
+      "@typescript-eslint/scope-manager": "8.59.3",
+      "@typescript-eslint/type-utils": "8.59.3",
+      "@typescript-eslint/types": "8.59.3",
+      "@typescript-eslint/typescript-estree": "8.59.3",
+      "@typescript-eslint/utils": "8.59.3",
+      "@typescript-eslint/visitor-keys": "8.59.3"
+    },
+    "patchedDependencies": {
+      "eslint-plugin-react@7.37.5": "patches/eslint-plugin-react@7.37.5.patch"
     }
   }
 }
