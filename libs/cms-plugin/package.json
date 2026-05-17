@@ -24,7 +24,7 @@
     "@eslint/eslintrc": "^3.3.5",
     "@payloadcms/eslint-config": "3.28.0",
     "@swc-node/register": "1.10.9",
-    "@swc/cli": "0.6.0",
+    "@swc/cli": "0.8.1",
     "@types/jsdom": "^21.1.7",
     "@types/node": "^22.5.4",
     "@types/react": "19.2.14",
