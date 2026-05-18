@@ -40,10 +40,12 @@ export async function findUsages(
           throw new Error("Collection does not have useAsTitle configured");
         }
 
+        const titleField = collectionConfig.admin.useAsTitle;
+
         return items.docs.flatMap((item) => {
-          const title = item[collectionConfig.admin.useAsTitle!] as
-            | Record<string, string>
-            | string;
+          const title = (item as unknown as Record<string, unknown>)[
+            titleField
+          ] as Record<string, string> | string;
           return findItemUsagesOnCollection(
             fieldType,
             collectionToFind,
