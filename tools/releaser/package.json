@@ -19,9 +19,9 @@
     "tsx": "^4.22.1"
   },
   "dependencies": {
-    "@octokit/rest": "^21.1.1",
+    "@octokit/rest": "^22.0.1",
     "changelogen": "^0.6.2",
-    "commander": "^13.1.0",
+    "commander": "^14.0.3",
     "semver": "^7.8.0"
   },
   "engines": {
