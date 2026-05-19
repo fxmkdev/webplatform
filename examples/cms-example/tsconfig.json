@@ -30,6 +30,7 @@
       ]
     },
     "target": "ES2022",
+    // Next's build-time TypeScript validation currently rejects "6.0" here.
     "ignoreDeprecations": "5.0"
   },
   "include": [
