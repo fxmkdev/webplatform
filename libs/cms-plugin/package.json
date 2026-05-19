@@ -3,6 +3,10 @@
   "version": "0.0.0-unknown",
   "description": "A blank template to get started with Payload 3.0",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fxmkdev/webplatform.git"
+  },
   "type": "module",
   "files": [
     "dist"

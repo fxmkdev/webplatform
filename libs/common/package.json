@@ -1,6 +1,10 @@
 {
   "name": "@fxmk/common",
   "version": "0.0.0-unknown",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fxmkdev/webplatform.git"
+  },
   "type": "module",
   "exports": {
     ".": "./dist/index.js"

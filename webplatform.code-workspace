@@ -4,7 +4,6 @@
     { "name": "examples/cms-example", "path": "./examples/cms-example" },
     { "name": "libs/cms-plugin", "path": "./libs/cms-plugin" },
     { "name": "libs/common", "path": "./libs/common" },
-    { "name": "tools/releaser", "path": "./tools/releaser" },
   ],
   "settings": {
     "editor.formatOnSave": true,

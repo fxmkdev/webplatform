@@ -12,9 +12,6 @@ inputs:
       "The prerelease tag of the package (if any). If not provided, the package
       will be published as 'latest'."
     required: false
-  npmToken:
-    description: "NPM token for publishing"
-    required: true
 runs:
   using: "composite"
   steps:
@@ -22,12 +19,7 @@ runs:
       shell: bash
       run: |
         pnpm --filter ${{ inputs.package }} exec pnpm version ${{ inputs.version }} --no-git-tag-version
-    - name: Add environment variable with NPM token to .npmrc
-      shell: bash
-      run: echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' >> .npmrc
     - name: Publish
       shell: bash
       run: |
-        pnpm --filter ${{ inputs.package }} publish --access=public --no-git-checks --tag ${{ inputs.prerelease_tag || 'latest' }}
-      env:
-        NPM_TOKEN: ${{ inputs.npmToken }}
+        pnpm --filter ${{ inputs.package }} exec npm publish --access=public --tag ${{ inputs.prerelease_tag || 'latest' }}
