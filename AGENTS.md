@@ -53,7 +53,6 @@ pnpm --filter cms-plugin test:int # Run plugin Vitest tests
 pnpm --filter cms-plugin test:e2e # Run plugin Playwright tests
 
 pnpm --filter common build        # Build the shared common package
-pnpm --filter releaser build      # Build the releaser tool
 pnpm --filter cms-example dev     # Start the example Payload/Next app
 pnpm --filter cms-example build   # Build the example app
 ```
@@ -77,5 +76,4 @@ pnpm --filter cms-example build   # Build the example app
 
 - `libs/cms-plugin` contains the Payload CMS plugin package.
 - `libs/common` contains shared code used by workspace packages.
-- `tools/releaser` contains the release helper CLI.
 - `examples/cms-example` contains the example Payload/Next application.

@@ -45,7 +45,7 @@ need to be strictly Conventional Commit formatted.
 ## Scope Guidance
 
 - Use a package or area scope when helpful, such as `cms-plugin`, `common`,
-  `releaser`, `cms-example`, `infra`, or `docs`.
+  `cms-example`, `infra`, or `docs`.
 - Keep descriptions concise, imperative, and behavior-focused.
 
 ## Runtime and Typings Policy
