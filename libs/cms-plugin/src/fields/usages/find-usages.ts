@@ -43,9 +43,14 @@ export async function findUsages(
         const titleField = collectionConfig.admin.useAsTitle;
 
         return items.docs.flatMap((item) => {
-          const title = (item as unknown as Record<string, unknown>)[
+          const titleValue = (item as unknown as Record<string, unknown>)[
             titleField
-          ] as Record<string, string> | string;
+          ];
+          const title = getUsageTitle(
+            titleValue,
+            locale ?? localization.defaultLocale,
+          );
+
           return findItemUsagesOnCollection(
             fieldType,
             collectionToFind,
@@ -58,10 +63,7 @@ export async function findUsages(
             collection: collectionSlug,
             fieldPath: path,
             label: collectionConfig.labels.singular,
-            title:
-              typeof title === "object"
-                ? title[locale ?? localization.defaultLocale]
-                : title,
+            title,
           }));
         });
       }),
@@ -94,6 +96,23 @@ export async function findUsages(
       }),
     ])
   ).flat();
+}
+
+function getUsageTitle(title: unknown, locale: null | string | undefined) {
+  if (typeof title === "string") {
+    return title;
+  }
+
+  if (title && typeof title === "object" && !Array.isArray(title)) {
+    if (typeof locale !== "string") {
+      return "";
+    }
+
+    const localizedTitle = (title as Record<string, unknown>)[locale];
+    return typeof localizedTitle === "string" ? localizedTitle : "";
+  }
+
+  return "";
 }
 
 function findItemUsagesOnCollection(
