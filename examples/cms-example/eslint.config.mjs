@@ -1,9 +1,21 @@
+import { createRequire } from "node:module";
+
 import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
 import nextTypescript from "eslint-config-next/typescript";
+
+const require = createRequire(import.meta.url);
+const reactVersion = require("react/package.json").version;
 
 const eslintConfig = [
   ...nextCoreWebVitals,
   ...nextTypescript,
+  {
+    settings: {
+      react: {
+        version: reactVersion,
+      },
+    },
+  },
   {
     rules: {
       "@typescript-eslint/ban-ts-comment": "warn",
@@ -24,7 +36,7 @@ const eslintConfig = [
     },
   },
   {
-    ignores: [".next/"],
+    ignores: [".next/", "eslint.config.mjs"],
   },
 ];
 

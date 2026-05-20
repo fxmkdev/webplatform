@@ -1,6 +1,11 @@
 // @ts-check
 
+import { createRequire } from "node:module";
+
 import payloadEsLintConfig from "@payloadcms/eslint-config";
+
+const require = createRequire(import.meta.url);
+const reactVersion = require("react/package.json").version;
 
 export const defaultESLintIgnores = [
   "**/.temp",
@@ -24,6 +29,13 @@ export const defaultESLintIgnores = [
 
 export default [
   ...payloadEsLintConfig,
+  {
+    settings: {
+      react: {
+        version: reactVersion,
+      },
+    },
+  },
   {
     rules: {
       "no-restricted-exports": "off",

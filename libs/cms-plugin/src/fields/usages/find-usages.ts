@@ -2,13 +2,7 @@ import type {
   SerializedEditorState,
   SerializedLexicalNode,
 } from "@payloadcms/richtext-lexical/lexical";
-import type {
-  CollectionSlug,
-  DataFromCollectionSlug,
-  Field,
-  Payload,
-  TypedLocale,
-} from "payload";
+import type { CollectionSlug, Field, Payload, TypedLocale } from "payload";
 
 import type {
   LinkElementNode,
@@ -46,13 +40,17 @@ export async function findUsages(
           throw new Error("Collection does not have useAsTitle configured");
         }
 
+        const titleField = collectionConfig.admin.useAsTitle;
+
         return items.docs.flatMap((item) => {
-          const title = (
-            item as DataFromCollectionSlug<CollectionSlug> &
-              Record<string, unknown>
-          )[collectionConfig.admin.useAsTitle!] as
-            | Record<string, string>
-            | string;
+          const titleValue = (item as unknown as Record<string, unknown>)[
+            titleField
+          ];
+          const title = getUsageTitle(
+            titleValue,
+            locale ?? localization.defaultLocale,
+          );
+
           return findItemUsagesOnCollection(
             fieldType,
             collectionToFind,
@@ -65,10 +63,7 @@ export async function findUsages(
             collection: collectionSlug,
             fieldPath: path,
             label: collectionConfig.labels.singular,
-            title:
-              typeof title === "object"
-                ? title[locale ?? localization.defaultLocale]
-                : title,
+            title,
           }));
         });
       }),
@@ -101,6 +96,23 @@ export async function findUsages(
       }),
     ])
   ).flat();
+}
+
+function getUsageTitle(title: unknown, locale: null | string | undefined) {
+  if (typeof title === "string") {
+    return title;
+  }
+
+  if (title && typeof title === "object" && !Array.isArray(title)) {
+    if (typeof locale !== "string") {
+      return "";
+    }
+
+    const localizedTitle = (title as Record<string, unknown>)[locale];
+    return typeof localizedTitle === "string" ? localizedTitle : "";
+  }
+
+  return "";
 }
 
 function findItemUsagesOnCollection(

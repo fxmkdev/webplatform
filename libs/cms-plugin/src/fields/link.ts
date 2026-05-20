@@ -83,7 +83,7 @@ export function linkField({
 
           return true;
         },
-      } as TextField,
+      } satisfies TextField,
     ],
     interfaceName: "NewLink", // TODO rename interface once Link collection is removed
     label: translated("cmsPlugin:fields:link:label"),

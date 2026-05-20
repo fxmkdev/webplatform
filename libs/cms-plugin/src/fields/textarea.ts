@@ -24,5 +24,5 @@ export function textareaField(
         ...config.admin?.components,
       },
     },
-  } as TextareaField;
+  };
 }
