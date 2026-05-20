@@ -59,9 +59,6 @@
       "@typescript-eslint/typescript-estree": "8.59.4",
       "@typescript-eslint/utils": "8.59.4",
       "@typescript-eslint/visitor-keys": "8.59.4"
-    },
-    "patchedDependencies": {
-      "eslint-plugin-react@7.37.5": "patches/eslint-plugin-react@7.37.5.patch"
     }
   }
 }

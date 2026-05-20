@@ -48,11 +48,6 @@ overrides:
   '@typescript-eslint/utils': 8.59.4
   '@typescript-eslint/visitor-keys': 8.59.4
 
-patchedDependencies:
-  eslint-plugin-react@7.37.5:
-    hash: 82556a200ebeb5b6e532155a48d255c94edca09880ddfc3660f3d547ea44e7db
-    path: patches/eslint-plugin-react@7.37.5.patch
-
 importers:
 
   .:
@@ -9676,7 +9671,7 @@ snapshots:
       eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import-x@4.6.1(eslint@10.4.0(jiti@2.5.1))(typescript@6.0.3))(eslint-plugin-import@2.32.0)(eslint@10.4.0(jiti@2.5.1))
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.59.4(eslint@10.4.0(jiti@2.5.1))(typescript@6.0.3))(eslint-import-resolver-typescript@3.10.1)(eslint@10.4.0(jiti@2.5.1))
       eslint-plugin-jsx-a11y: 6.10.2(eslint@10.4.0(jiti@2.5.1))
-      eslint-plugin-react: 7.37.5(patch_hash=82556a200ebeb5b6e532155a48d255c94edca09880ddfc3660f3d547ea44e7db)(eslint@10.4.0(jiti@2.5.1))
+      eslint-plugin-react: 7.37.5(eslint@10.4.0(jiti@2.5.1))
       eslint-plugin-react-hooks: 7.1.1(eslint@10.4.0(jiti@2.5.1))
       globals: 16.4.0
       typescript-eslint: 8.59.4(eslint@10.4.0(jiti@2.5.1))(typescript@6.0.3)
@@ -9696,7 +9691,7 @@ snapshots:
       eslint-import-resolver-typescript: 3.10.1(eslint-plugin-import-x@4.6.1(eslint@10.4.0(jiti@2.5.1))(typescript@6.0.3))(eslint-plugin-import@2.32.0)(eslint@10.4.0(jiti@2.5.1))
       eslint-plugin-import: 2.32.0(eslint-import-resolver-typescript@3.10.1)(eslint@10.4.0(jiti@2.5.1))
       eslint-plugin-jsx-a11y: 6.10.2(eslint@10.4.0(jiti@2.5.1))
-      eslint-plugin-react: 7.37.5(patch_hash=82556a200ebeb5b6e532155a48d255c94edca09880ddfc3660f3d547ea44e7db)(eslint@10.4.0(jiti@2.5.1))
+      eslint-plugin-react: 7.37.5(eslint@10.4.0(jiti@2.5.1))
       eslint-plugin-react-hooks: 7.1.1(eslint@10.4.0(jiti@2.5.1))
       globals: 16.4.0
       typescript-eslint: 8.59.4(eslint@10.4.0(jiti@2.5.1))(typescript@6.0.3)
@@ -10007,7 +10002,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-react@7.37.5(patch_hash=82556a200ebeb5b6e532155a48d255c94edca09880ddfc3660f3d547ea44e7db)(eslint@10.4.0(jiti@2.5.1)):
+  eslint-plugin-react@7.37.5(eslint@10.4.0(jiti@2.5.1)):
     dependencies:
       array-includes: 3.1.9
       array.prototype.findlast: 1.2.5
