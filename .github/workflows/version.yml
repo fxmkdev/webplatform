@@ -48,7 +48,7 @@ jobs:
       sha: ${{ steps.get-version.outputs.sha }}
     steps:
       - name: Checkout with full history
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Setup
