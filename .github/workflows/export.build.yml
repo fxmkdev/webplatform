@@ -154,7 +154,7 @@ jobs:
           name: payload-types
           path: libs/payload-types/src
       - name: Publish frontend to Chromatic
-        uses: chromaui/action@v1
+        uses: chromaui/action@v17
         with:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           exitOnceUploaded: true
