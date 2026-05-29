@@ -158,7 +158,6 @@ jobs:
         with:
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
           exitOnceUploaded: true
-          onlyChanged: true
           workingDir: apps/frontend
           storybookBaseDir: apps/frontend
         env:
