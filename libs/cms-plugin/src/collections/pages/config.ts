@@ -261,6 +261,7 @@ export function Pages({
             id: siblingData.brand as string,
             collection: "brands",
             depth: 2,
+            req,
             select: {
               homeLink: true,
               rootPath: true,
