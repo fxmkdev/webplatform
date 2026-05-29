@@ -70,6 +70,23 @@ export async function getBrandsForRootPath(
   req: PayloadRequest,
   rootPath: string,
 ) {
+  const publishedLocaleIds = await getPublishedLocaleIds(req);
+
+  const result = await req.payload.find({
+    collection: "brands",
+    pagination: false,
+    req,
+    where: {
+      or: publishedLocaleIds.map((localeId) => ({
+        [`rootPath.${localeId}`]: { equals: rootPath },
+      })),
+    },
+  });
+
+  return result.docs;
+}
+
+export async function getPublishedLocaleIds(req: PayloadRequest) {
   const settings = await req.payload.findGlobal({
     slug: "settings",
     req,
@@ -80,19 +97,11 @@ export async function getBrandsForRootPath(
     },
   });
 
-  const result = await req.payload.find({
-    collection: "brands",
-    pagination: false,
-    req,
-    where: {
-      or: (
-        (settings.publishedLocales as Record<string, unknown>)
-          .publishedLocales as { id: string }[]
-      ).map((l) => ({
-        [`rootPath.${l.id}`]: { equals: rootPath },
-      })),
-    },
-  });
+  const publishedLocales = (
+    settings.publishedLocales as Record<string, unknown>
+  ).publishedLocales as ({ id: string } | string)[];
 
-  return result.docs;
+  return publishedLocales
+    .map((locale) => (typeof locale === "string" ? locale : locale.id))
+    .filter((localeId): localeId is string => Boolean(localeId));
 }

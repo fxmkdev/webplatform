@@ -1,5 +1,7 @@
 import type { PayloadRequest } from "payload";
 
+import { getPublishedLocaleIds } from "./root-path.js";
+
 function getRelationshipId(value: unknown) {
   if (typeof value === "string") {
     return value;
@@ -31,19 +33,21 @@ export async function syncBrandHomeLink({
   const brand = await req.payload.findByID({
     id: brandId,
     collection: "brands",
+    locale: "all",
     req,
     select: {
       rootPath: true,
     },
   });
 
-  if (typeof brand.rootPath !== "string") {
+  const rootPathsByLocale = getRootPathsByLocale(
+    brand.rootPath,
+    await getPublishedLocaleIds(req),
+  );
+
+  if (rootPathsByLocale.length === 0) {
     return;
   }
-
-  const pathnameWhere = req.locale
-    ? { [`pathname.${req.locale}`]: { equals: brand.rootPath } }
-    : { pathname: { equals: brand.rootPath } };
 
   const homePages = await req.payload.find({
     collection: "pages",
@@ -52,7 +56,14 @@ export async function syncBrandHomeLink({
     pagination: false,
     req,
     where: {
-      and: [{ brand: { equals: brandId } }, pathnameWhere],
+      and: [
+        { brand: { equals: brandId } },
+        {
+          or: rootPathsByLocale.map(({ localeId, rootPath }) => ({
+            [`pathname.${localeId}`]: { equals: rootPath },
+          })),
+        },
+      ],
     },
   });
 
@@ -71,5 +82,23 @@ export async function syncBrandHomeLink({
     },
     overrideAccess: true,
     req,
+  });
+}
+
+export function getRootPathsByLocale(rootPath: unknown, localeIds: string[]) {
+  if (typeof rootPath === "string") {
+    return localeIds.map((localeId) => ({ localeId, rootPath }));
+  }
+
+  if (!rootPath || typeof rootPath !== "object" || Array.isArray(rootPath)) {
+    return [];
+  }
+
+  return localeIds.flatMap((localeId) => {
+    const localizedRootPath = (rootPath as Record<string, unknown>)[localeId];
+
+    return typeof localizedRootPath === "string"
+      ? [{ localeId, rootPath: localizedRootPath }]
+      : [];
   });
 }
