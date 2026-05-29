@@ -2,6 +2,19 @@
 
 A template repo to create a [Payload CMS](https://payloadcms.com) plugin.
 
+## Brand URL Model
+
+Brands own their URL namespace through the localized `rootPath` field. Use
+`rootPath` as the preferred public API for brand routing and URL-prefix logic.
+Every page assigned to a brand must use either the brand's root path itself or a
+child path below it.
+
+The `homeLink` field is kept for backwards compatibility with existing API
+consumers. It is hidden from editors and managed by the plugin: when a page's
+localized pathname matches the brand's localized `rootPath`, that page becomes
+the derived home link. New consumers should not treat `homeLink` as the source
+of truth for a brand's URL prefix.
+
 Payload is built with a robust infrastructure intended to support Plugins with
 ease. This provides a simple, modular, and reusable way for developers to extend
 the core capabilities of Payload.
