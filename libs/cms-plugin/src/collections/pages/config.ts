@@ -349,6 +349,15 @@ export function Pages({
           }
         },
       ],
+      afterDelete: [
+        async ({ doc, req }) => {
+          const brandId = getPageBrandId(doc as Record<string, unknown>);
+
+          if (brandId) {
+            await syncBrandHomeLink({ brandId, req });
+          }
+        },
+      ],
     },
     labels: {
       plural: {
