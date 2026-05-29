@@ -77,6 +77,7 @@ export interface Config {
     pages: Page;
     redirects: Redirect;
     brands: Brand;
+    'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -96,6 +97,7 @@ export interface Config {
     pages: PagesSelect<false> | PagesSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     brands: BrandsSelect<false> | BrandsSelect<true>;
+    'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -103,6 +105,294 @@ export interface Config {
   db: {
     defaultIDType: string;
   };
+  fallbackLocale:
+    | ('false' | 'none' | 'null')
+    | false
+    | null
+    | (
+        | 'en'
+        | 'en-US'
+        | 'en-GB'
+        | 'en-CA'
+        | 'en-AU'
+        | 'zh'
+        | 'zh-CN'
+        | 'zh-TW'
+        | 'zh-HK'
+        | 'es'
+        | 'es-ES'
+        | 'es-MX'
+        | 'es-AR'
+        | 'es-CO'
+        | 'es-CL'
+        | 'ar'
+        | 'ar-SA'
+        | 'ar-EG'
+        | 'ar-AE'
+        | 'pt'
+        | 'pt-BR'
+        | 'pt-PT'
+        | 'fr'
+        | 'fr-FR'
+        | 'fr-CA'
+        | 'de'
+        | 'de-DE'
+        | 'ja'
+        | 'ja-JP'
+        | 'ru'
+        | 'ru-RU'
+        | 'hi'
+        | 'hi-IN'
+        | 'it'
+        | 'it-IT'
+        | 'ko'
+        | 'ko-KR'
+        | 'tr'
+        | 'tr-TR'
+        | 'pl'
+        | 'pl-PL'
+        | 'nl'
+        | 'nl-NL'
+        | 'sv'
+        | 'sv-SE'
+        | 'fi'
+        | 'fi-FI'
+        | 'no'
+        | 'no-NO'
+        | 'da'
+        | 'da-DK'
+        | 'id'
+        | 'id-ID'
+        | 'ms'
+        | 'ms-MY'
+        | 'th'
+        | 'th-TH'
+        | 'vi'
+        | 'vi-VN'
+        | 'he'
+        | 'he-IL'
+        | 'fa'
+        | 'fa-IR'
+        | 'uk'
+        | 'uk-UA'
+        | 'cs'
+        | 'cs-CZ'
+        | 'sk'
+        | 'sk-SK'
+        | 'ro'
+        | 'ro-RO'
+        | 'hu'
+        | 'hu-HU'
+        | 'el'
+        | 'el-GR'
+        | 'bn'
+        | 'bn-BD'
+        | 'bn-IN'
+        | 'ta'
+        | 'ta-IN'
+        | 'te'
+        | 'te-IN'
+        | 'ml'
+        | 'ml-IN'
+        | 'mr'
+        | 'mr-IN'
+        | 'pa'
+        | 'pa-IN'
+        | 'gu'
+        | 'gu-IN'
+        | 'ur'
+        | 'ur-PK'
+        | 'sw'
+        | 'sw-KE'
+        | 'af'
+        | 'af-ZA'
+        | 'am'
+        | 'am-ET'
+        | 'et'
+        | 'et-EE'
+        | 'lv'
+        | 'lv-LV'
+        | 'lt'
+        | 'lt-LT'
+        | 'sl'
+        | 'sl-SI'
+        | 'sr'
+        | 'sr-RS'
+        | 'hr'
+        | 'hr-HR'
+        | 'bg'
+        | 'bg-BG'
+        | 'ka'
+        | 'ka-GE'
+        | 'az'
+        | 'az-AZ'
+        | 'hy'
+        | 'hy-AM'
+        | 'ne'
+        | 'ne-NP'
+        | 'si'
+        | 'si-LK'
+        | 'my'
+        | 'my-MM'
+        | 'km'
+        | 'km-KH'
+        | 'lo'
+        | 'lo-LA'
+        | 'mn'
+        | 'mn-MN'
+        | 'kk'
+        | 'kk-KZ'
+        | 'uz'
+        | 'uz-UZ'
+        | 'ps'
+        | 'ps-AF'
+        | 'es-419'
+        | 'zh-Hans'
+        | 'zh-Hant'
+        | 'nb'
+      )
+    | (
+        | 'en'
+        | 'en-US'
+        | 'en-GB'
+        | 'en-CA'
+        | 'en-AU'
+        | 'zh'
+        | 'zh-CN'
+        | 'zh-TW'
+        | 'zh-HK'
+        | 'es'
+        | 'es-ES'
+        | 'es-MX'
+        | 'es-AR'
+        | 'es-CO'
+        | 'es-CL'
+        | 'ar'
+        | 'ar-SA'
+        | 'ar-EG'
+        | 'ar-AE'
+        | 'pt'
+        | 'pt-BR'
+        | 'pt-PT'
+        | 'fr'
+        | 'fr-FR'
+        | 'fr-CA'
+        | 'de'
+        | 'de-DE'
+        | 'ja'
+        | 'ja-JP'
+        | 'ru'
+        | 'ru-RU'
+        | 'hi'
+        | 'hi-IN'
+        | 'it'
+        | 'it-IT'
+        | 'ko'
+        | 'ko-KR'
+        | 'tr'
+        | 'tr-TR'
+        | 'pl'
+        | 'pl-PL'
+        | 'nl'
+        | 'nl-NL'
+        | 'sv'
+        | 'sv-SE'
+        | 'fi'
+        | 'fi-FI'
+        | 'no'
+        | 'no-NO'
+        | 'da'
+        | 'da-DK'
+        | 'id'
+        | 'id-ID'
+        | 'ms'
+        | 'ms-MY'
+        | 'th'
+        | 'th-TH'
+        | 'vi'
+        | 'vi-VN'
+        | 'he'
+        | 'he-IL'
+        | 'fa'
+        | 'fa-IR'
+        | 'uk'
+        | 'uk-UA'
+        | 'cs'
+        | 'cs-CZ'
+        | 'sk'
+        | 'sk-SK'
+        | 'ro'
+        | 'ro-RO'
+        | 'hu'
+        | 'hu-HU'
+        | 'el'
+        | 'el-GR'
+        | 'bn'
+        | 'bn-BD'
+        | 'bn-IN'
+        | 'ta'
+        | 'ta-IN'
+        | 'te'
+        | 'te-IN'
+        | 'ml'
+        | 'ml-IN'
+        | 'mr'
+        | 'mr-IN'
+        | 'pa'
+        | 'pa-IN'
+        | 'gu'
+        | 'gu-IN'
+        | 'ur'
+        | 'ur-PK'
+        | 'sw'
+        | 'sw-KE'
+        | 'af'
+        | 'af-ZA'
+        | 'am'
+        | 'am-ET'
+        | 'et'
+        | 'et-EE'
+        | 'lv'
+        | 'lv-LV'
+        | 'lt'
+        | 'lt-LT'
+        | 'sl'
+        | 'sl-SI'
+        | 'sr'
+        | 'sr-RS'
+        | 'hr'
+        | 'hr-HR'
+        | 'bg'
+        | 'bg-BG'
+        | 'ka'
+        | 'ka-GE'
+        | 'az'
+        | 'az-AZ'
+        | 'hy'
+        | 'hy-AM'
+        | 'ne'
+        | 'ne-NP'
+        | 'si'
+        | 'si-LK'
+        | 'my'
+        | 'my-MM'
+        | 'km'
+        | 'km-KH'
+        | 'lo'
+        | 'lo-LA'
+        | 'mn'
+        | 'mn-MN'
+        | 'kk'
+        | 'kk-KZ'
+        | 'uz'
+        | 'uz-UZ'
+        | 'ps'
+        | 'ps-AF'
+        | 'es-419'
+        | 'zh-Hans'
+        | 'zh-Hant'
+        | 'nb'
+      )[];
   globals: {
     settings: Settings;
     common: Common;
@@ -252,13 +542,10 @@ export interface Config {
     | 'zh-Hans'
     | 'zh-Hant'
     | 'nb';
-  user:
-    | (User & {
-        collection: 'users';
-      })
-    | (ApiKey & {
-        collection: 'api-keys';
-      });
+  widgets: {
+    collections: CollectionsWidget;
+  };
+  user: User | ApiKey;
   jobs: {
     tasks: unknown;
     workflows: unknown;
@@ -370,6 +657,7 @@ export interface User {
       }[]
     | null;
   password?: string | null;
+  collection: 'users';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -384,6 +672,7 @@ export interface ApiKey {
   enableAPIKey?: boolean | null;
   apiKey?: string | null;
   apiKeyIndex?: string | null;
+  collection: 'api-keys';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -754,7 +1043,7 @@ export interface Page {
    */
   brand: string | Brand;
   /**
-   * The pathname is used to navigate to this page. It must be unique. The first path segment must be the brand's home link.
+   * The pathname is used to navigate to this page. It must be unique and start with the brand's root path.
    */
   pathname: string;
   pathname_locked?: boolean | null;
@@ -790,7 +1079,7 @@ export interface HeroSlides {
         root: {
           type: string;
           children: {
-            type: string;
+            type: any;
             version: number;
             [k: string]: unknown;
           }[];
@@ -805,7 +1094,7 @@ export interface HeroSlides {
         root: {
           type: string;
           children: {
-            type: string;
+            type: any;
             version: number;
             [k: string]: unknown;
           }[];
@@ -857,7 +1146,7 @@ export interface HeroVideo {
       root: {
         type: string;
         children: {
-          type: string;
+          type: any;
           version: number;
           [k: string]: unknown;
         }[];
@@ -872,7 +1161,7 @@ export interface HeroVideo {
       root: {
         type: string;
         children: {
-          type: string;
+          type: any;
           version: number;
           [k: string]: unknown;
         }[];
@@ -920,7 +1209,7 @@ export interface LeadText {
     root: {
       type: string;
       children: {
-        type: string;
+        type: any;
         version: number;
         [k: string]: unknown;
       }[];
@@ -953,7 +1242,7 @@ export interface ImageWithFloatingText {
       root: {
         type: string;
         children: {
-          type: string;
+          type: any;
           version: number;
           [k: string]: unknown;
         }[];
@@ -974,7 +1263,7 @@ export interface ImageWithFloatingText {
     root: {
       type: string;
       children: {
-        type: string;
+        type: any;
         version: number;
         [k: string]: unknown;
       }[];
@@ -1000,7 +1289,7 @@ export interface Story {
     root: {
       type: string;
       children: {
-        type: string;
+        type: any;
         version: number;
         [k: string]: unknown;
       }[];
@@ -1035,7 +1324,7 @@ export interface Features {
       root: {
         type: string;
         children: {
-          type: string;
+          type: any;
           version: number;
           [k: string]: unknown;
         }[];
@@ -1081,7 +1370,7 @@ export interface WideImage {
       root: {
         type: string;
         children: {
-          type: string;
+          type: any;
           version: number;
           [k: string]: unknown;
         }[];
@@ -1114,7 +1403,7 @@ export interface TextColumnsWithImages {
     root: {
       type: string;
       children: {
-        type: string;
+        type: any;
         version: number;
         [k: string]: unknown;
       }[];
@@ -1137,7 +1426,7 @@ export interface TextColumnsWithImages {
       root: {
         type: string;
         children: {
-          type: string;
+          type: any;
           version: number;
           [k: string]: unknown;
         }[];
@@ -1180,7 +1469,7 @@ export interface Map {
       root: {
         type: string;
         children: {
-          type: string;
+          type: any;
           version: number;
           [k: string]: unknown;
         }[];
@@ -1209,7 +1498,7 @@ export interface Testimonials {
     root: {
       type: string;
       children: {
-        type: string;
+        type: any;
         version: number;
         [k: string]: unknown;
       }[];
@@ -1242,7 +1531,7 @@ export interface RoomList {
       root: {
         type: string;
         children: {
-          type: string;
+          type: any;
           version: number;
           [k: string]: unknown;
         }[];
@@ -1277,6 +1566,10 @@ export interface Brand {
   id: string;
   name: string;
   homeLink?: NewLink;
+  /**
+   * The localized root path for this brand. Pages for this brand must use this path or a child path below it.
+   */
+  rootPath: string;
   /**
    * The base title is appended to the titles of the brand’s pages. If the page does not have a title, the base title will be used as the title. Include important keywords in the title for SEO.
    */
@@ -1330,6 +1623,23 @@ export interface Redirect {
   };
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-kv".
+ */
+export interface PayloadKv {
+  id: string;
+  key: string;
+  data:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1886,6 +2196,7 @@ export interface BrandsSelect<T extends boolean = true> {
   id?: T;
   name?: T;
   homeLink?: T | NewLinkSelect<T>;
+  rootPath?: T;
   baseTitle?: T;
   logo?: T;
   banner?: T;
@@ -1922,6 +2233,14 @@ export interface BrandsSelect<T extends boolean = true> {
       };
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-kv_select".
+ */
+export interface PayloadKvSelect<T extends boolean = true> {
+  key?: T;
+  data?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2003,7 +2322,7 @@ export interface Common {
       root: {
         type: string;
         children: {
-          type: string;
+          type: any;
           version: number;
           [k: string]: unknown;
         }[];
@@ -2021,7 +2340,7 @@ export interface Common {
       root: {
         type: string;
         children: {
-          type: string;
+          type: any;
           version: number;
           [k: string]: unknown;
         }[];
@@ -2140,6 +2459,16 @@ export interface CommonSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "collections_widget".
+ */
+export interface CollectionsWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'full';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

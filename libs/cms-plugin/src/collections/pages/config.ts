@@ -15,12 +15,14 @@ import type { TranslationsKey } from "../../translations/types.js";
 
 import { canManageContent } from "../../common/access-control.js";
 import { getLivePreviewUrl } from "../../common/live-preview.js";
+import { pathnameBelongsToRootPath } from "../../common/pathname.js";
 import { contentField } from "../../fields/content.js";
 import { descriptionField } from "../../fields/description.js";
 import { heroField } from "../../fields/hero.js";
 import { textField } from "../../fields/text.js";
 import { textareaField } from "../../fields/textarea.js";
 import { contentGroup } from "../../groups.js";
+import { getPageBrandId, syncBrandHomeLink } from "../brands/home-link.js";
 import {
   getLocalizedPathnameEndpoint,
   getPagesForPathname,
@@ -179,8 +181,8 @@ export function Pages({
             Field: "@fxmk/cms-plugin/client#PathnameField",
           },
           description: {
-            en: "The pathname is used to navigate to this page. It must be unique. The first path segment must be the brand's home link.",
-            es: "La ruta se utiliza para navegar a esta página. Debe ser única. El primer segmento de la ruta debe ser el enlace de inicio de la marca.",
+            en: "The pathname is used to navigate to this page. It must be unique and start with the brand's root path.",
+            es: "La ruta se utiliza para navegar a esta página. Debe ser única y comenzar con la ruta raíz de la marca.",
           },
           placeholder: "e.g. /experiences/lost-city",
           position: "sidebar",
@@ -261,28 +263,25 @@ export function Pages({
             depth: 2,
             select: {
               homeLink: true,
+              rootPath: true,
             },
           });
 
+          const brandRootPath =
+            typeof brand.rootPath === "string" ? brand.rootPath : undefined;
           const pageRelationship = brand.homeLink as
             | Record<string, unknown>
             | undefined;
-          if (pageRelationship?.doc) {
-            // Brand does not have a home link, so we can't validate the pathname.
-            // We can't make the brand home link required, because we need to create a brand when there is no page yet.
+          const legacyHomeLinkPathname = pageRelationship?.doc
+            ? ((pageRelationship.doc as Record<string, unknown>)
+                .pathname as string)
+            : undefined;
+          const rootPath = brandRootPath ?? legacyHomeLinkPathname;
 
-            const brandHomeLinkPathname = (
-              pageRelationship.doc as Record<string, unknown>
-            ).pathname as string;
-            const safePrefix = brandHomeLinkPathname.endsWith("/")
-              ? brandHomeLinkPathname
-              : brandHomeLinkPathname + "/";
-            if (
-              value !== brandHomeLinkPathname &&
-              !value.startsWith(safePrefix)
-            ) {
+          if (rootPath) {
+            if (!pathnameBelongsToRootPath(value, rootPath)) {
               return t("cmsPlugin:pages:pathname:pathnameMustStartWithPrefix", {
-                prefix: brandHomeLinkPathname,
+                prefix: rootPath,
               });
             }
           }
@@ -328,6 +327,28 @@ export function Pages({
         required: false,
       }),
     ],
+    hooks: {
+      afterChange: [
+        async ({ doc, operation, previousDoc, req }) => {
+          if (operation !== "create" && operation !== "update") {
+            return;
+          }
+
+          const brandId = getPageBrandId(doc as Record<string, unknown>);
+          const previousBrandId =
+            previousDoc &&
+            getPageBrandId(previousDoc as Record<string, unknown>);
+
+          if (brandId) {
+            await syncBrandHomeLink({ brandId, req });
+          }
+
+          if (previousBrandId && previousBrandId !== brandId) {
+            await syncBrandHomeLink({ brandId: previousBrandId, req });
+          }
+        },
+      ],
+    },
     labels: {
       plural: {
         en: "Pages",
