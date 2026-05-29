@@ -328,7 +328,10 @@ export function Brands({
             return;
           }
 
-          if (doc.rootPath === previousDoc?.rootPath) {
+          if (
+            JSON.stringify(doc.rootPath) ===
+            JSON.stringify(previousDoc?.rootPath)
+          ) {
             return;
           }
 
