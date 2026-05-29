@@ -7,6 +7,7 @@ import type { TranslationsKey } from "../../translations/types.js";
 
 import {
   normalizePathnameInput,
+  pathnameBelongsToRootPath,
   validateRootPathFormat,
 } from "../../common/pathname.js";
 import { textField } from "../../fields/text.js";
@@ -57,16 +58,17 @@ async function validateRootPath(
     return t(`cmsPlugin:brands:rootPath:${formatValidationResult}`);
   }
 
-  const brands = await getBrandsForRootPath(options.req, rootPath);
-  const alreadyExists = brands.some((brand) => brand.id !== options.id);
-  if (alreadyExists) {
-    return t("cmsPlugin:brands:rootPath:alreadyExists");
+  const overlappingBrand = (
+    await getBrandsWithOverlappingRootPath(options.req, rootPath)
+  ).find((brand) => brand.id !== options.id);
+  if (overlappingBrand) {
+    return t("cmsPlugin:brands:rootPath:overlaps");
   }
 
   return true;
 }
 
-export async function getBrandsForRootPath(
+export async function getBrandsWithOverlappingRootPath(
   req: PayloadRequest,
   rootPath: string,
 ) {
@@ -74,16 +76,42 @@ export async function getBrandsForRootPath(
 
   const result = await req.payload.find({
     collection: "brands",
+    locale: "all",
     pagination: false,
     req,
-    where: {
-      or: publishedLocaleIds.map((localeId) => ({
-        [`rootPath.${localeId}`]: { equals: rootPath },
-      })),
+    select: {
+      rootPath: true,
     },
   });
 
-  return result.docs;
+  return result.docs.filter((brand) =>
+    getLocalizedRootPaths(brand.rootPath, publishedLocaleIds).some(
+      (existingRootPath) => rootPathsOverlap(existingRootPath, rootPath),
+    ),
+  );
+}
+
+export function rootPathsOverlap(rootPathA: string, rootPathB: string) {
+  return (
+    pathnameBelongsToRootPath(rootPathA, rootPathB) ||
+    pathnameBelongsToRootPath(rootPathB, rootPathA)
+  );
+}
+
+function getLocalizedRootPaths(rootPath: unknown, localeIds: string[]) {
+  if (typeof rootPath === "string") {
+    return [rootPath];
+  }
+
+  if (!rootPath || typeof rootPath !== "object" || Array.isArray(rootPath)) {
+    return [];
+  }
+
+  return localeIds.flatMap((localeId) => {
+    const localizedRootPath = (rootPath as Record<string, unknown>)[localeId];
+
+    return typeof localizedRootPath === "string" ? [localizedRootPath] : [];
+  });
 }
 
 export async function getPublishedLocaleIds(req: PayloadRequest) {
