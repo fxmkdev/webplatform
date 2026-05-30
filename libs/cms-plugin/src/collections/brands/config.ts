@@ -1,7 +1,6 @@
 import type {
   CollectionConfig,
   Locale,
-  Payload,
   SanitizedCollectionConfig,
 } from "payload";
 
@@ -14,6 +13,8 @@ import { linkField } from "../../fields/link.js";
 import { showField } from "../../fields/show.js";
 import { textField } from "../../fields/text.js";
 import { contentGroup } from "../../groups.js";
+import { syncBrandHomeLink } from "./home-link.js";
+import { rootPathField } from "./root-path.js";
 import { brandUsagesField } from "./usages.js";
 
 type BrandsOptions = {
@@ -31,29 +32,22 @@ export function Brands({
       update: canManageContent,
     },
     admin: {
-      defaultColumns: ["name", "logo", "homeLink", "updatedAt"],
+      defaultColumns: ["name", "rootPath", "logo", "updatedAt"],
       group: contentGroup,
       listSearchableFields: ["id", "name"],
       livePreview: livePreviewBaseUrl
         ? {
-            url: async ({
+            url: ({
               data,
               locale,
-              payload,
             }: {
               collectionConfig?: SanitizedCollectionConfig;
               data: Record<string, unknown>;
               locale: Locale;
-              payload: Payload;
             }) => {
-              const homePage = await payload.findByID({
-                id: (data.homeLink as { doc: string }).doc,
-                collection: "pages",
-              });
-
               return getLivePreviewUrl(
                 livePreviewBaseUrl,
-                homePage.pathname,
+                typeof data.rootPath === "string" ? data.rootPath : "/",
                 `brands/${data.id as string}`,
                 locale.code,
               );
@@ -67,6 +61,7 @@ export function Brands({
       name: true,
       baseTitle: true,
       homeLink: true,
+      rootPath: true,
     },
     defaultSort: "name",
     fields: [
@@ -111,6 +106,9 @@ export function Brands({
                     create: () => false,
                     update: () => false,
                   },
+                  admin: {
+                    hidden: true,
+                  },
                   label: {
                     en: "Home Link",
                     es: "Enlace de inicio",
@@ -118,6 +116,7 @@ export function Brands({
                 },
                 required: false,
               }),
+              rootPathField(),
               textField({
                 name: "baseTitle",
                 admin: {
@@ -322,6 +321,24 @@ export function Brands({
         ],
       },
     ],
+    hooks: {
+      afterChange: [
+        async ({ doc, operation, previousDoc, req }) => {
+          if (operation !== "update") {
+            return;
+          }
+
+          if (
+            JSON.stringify(doc.rootPath) ===
+            JSON.stringify(previousDoc?.rootPath)
+          ) {
+            return;
+          }
+
+          await syncBrandHomeLink({ brandId: doc.id as string, req });
+        },
+      ],
+    },
     labels: {
       plural: {
         en: "Brands",

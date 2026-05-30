@@ -35,6 +35,12 @@ export const en = {
     },
     brands: {
       navLinkRowLabel: "Navigation Link {{ n }}",
+      rootPath: {
+        alreadyExists: "There is already a brand with this root path.",
+        mustNotEndWithSlash: "The root path must not end with '/'.",
+        mustStartWithSlash: "The root path must start with '/'.",
+        overlaps: "The root path overlaps with another brand's root path.",
+      },
     },
     common: {
       id: "ID",

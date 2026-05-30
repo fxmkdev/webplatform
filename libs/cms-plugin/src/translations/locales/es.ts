@@ -33,6 +33,12 @@ export const es: TranslationsObject = {
     },
     brands: {
       navLinkRowLabel: "Enlace de navegación {{ n }}",
+      rootPath: {
+        alreadyExists: "Ya existe una marca con esta ruta raíz.",
+        mustNotEndWithSlash: "La ruta raíz no debe terminar con '/'.",
+        mustStartWithSlash: "La ruta raíz debe comenzar con '/'.",
+        overlaps: "La ruta raíz se solapa con la ruta raíz de otra marca.",
+      },
     },
     common: {
       id: "ID",
