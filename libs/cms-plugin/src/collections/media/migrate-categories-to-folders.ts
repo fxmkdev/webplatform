@@ -44,6 +44,18 @@ type FindResult<T> = {
   docs: T[];
 };
 
+type PayloadCreate = (options: Record<string, unknown>) => Promise<unknown>;
+
+type PayloadFind = (
+  options: Record<string, unknown>,
+) => Promise<FindResult<unknown>>;
+
+type PayloadUpdate = (options: Record<string, unknown>) => Promise<unknown>;
+
+type RequestOptions = {
+  req?: PayloadRequest;
+};
+
 function relationshipID(value: unknown): ID | undefined {
   if (typeof value === "number" || typeof value === "string") {
     return value;
@@ -76,6 +88,142 @@ function folderNameForCategory(
     : category.name;
 }
 
+async function createFolder({
+  create,
+  folderCollectionSlug,
+  folderFieldName,
+  folderName,
+  folderType,
+  parentFolder,
+  requestOptions,
+}: {
+  create: PayloadCreate;
+  folderCollectionSlug: string;
+  folderFieldName: string;
+  folderName: string;
+  folderType: false | string;
+  parentFolder: ID | null;
+  requestOptions: RequestOptions;
+}) {
+  return relationshipID(
+    await create({
+      collection: folderCollectionSlug,
+      data: {
+        name: folderName,
+        ...(parentFolder === null ? {} : { [folderFieldName]: parentFolder }),
+        ...(folderType ? { folderType: [folderType] } : {}),
+      },
+      ...requestOptions,
+    }),
+  );
+}
+
+async function findCategories({
+  categoryCollectionSlug,
+  find,
+  requestOptions,
+}: {
+  categoryCollectionSlug: string;
+  find: PayloadFind;
+  requestOptions: RequestOptions;
+}) {
+  return (
+    await find({
+      collection: categoryCollectionSlug,
+      depth: 0,
+      pagination: false,
+      ...requestOptions,
+    })
+  ).docs as LegacyMediaCategory[];
+}
+
+async function findMediaForCategory({
+  categoryID,
+  find,
+  mediaCollectionSlug,
+  requestOptions,
+}: {
+  categoryID: ID;
+  find: PayloadFind;
+  mediaCollectionSlug: string;
+  requestOptions: RequestOptions;
+}) {
+  return (
+    await find({
+      collection: mediaCollectionSlug,
+      depth: 0,
+      pagination: false,
+      where: {
+        category: {
+          equals: categoryID,
+        },
+      },
+      ...requestOptions,
+    })
+  ).docs as MediaWithLegacyCategory[];
+}
+
+async function findReusableFolder({
+  find,
+  folderCollectionSlug,
+  folderFieldName,
+  folderName,
+  folderType,
+  parentFolder,
+  requestOptions,
+}: {
+  find: PayloadFind;
+  folderCollectionSlug: string;
+  folderFieldName: string;
+  folderName: string;
+  folderType: false | string;
+  parentFolder: ID | null;
+  requestOptions: RequestOptions;
+}) {
+  const existingFolders = (
+    await find({
+      collection: folderCollectionSlug,
+      depth: 0,
+      limit: 100,
+      where: {
+        name: {
+          equals: folderName,
+        },
+        ...(parentFolder === null
+          ? {
+              or: [
+                {
+                  [folderFieldName]: {
+                    exists: false,
+                  },
+                },
+                {
+                  [folderFieldName]: {
+                    equals: null,
+                  },
+                },
+              ],
+            }
+          : {
+              [folderFieldName]: {
+                equals: parentFolder,
+              },
+            }),
+      },
+      ...requestOptions,
+    })
+  ).docs as FolderDocument[];
+
+  return existingFolders.find(
+    (existingFolder) =>
+      folderMatchesParent(existingFolder, parentFolder) &&
+      (!folderType ||
+        !existingFolder.folderType ||
+        existingFolder.folderType.length === 0 ||
+        existingFolder.folderType.includes(folderType)),
+  );
+}
+
 export async function migrateMediaCategoriesToFolders({
   categoryCollectionSlug = "mediaCategory",
   dryRun = false,
@@ -97,24 +245,15 @@ export async function migrateMediaCategoriesToFolders({
   };
 
   const requestOptions = req ? { req } : {};
-  const find = payload.find.bind(payload) as unknown as (
-    options: Record<string, unknown>,
-  ) => Promise<FindResult<unknown>>;
-  const create = payload.create.bind(payload) as unknown as (
-    options: Record<string, unknown>,
-  ) => Promise<unknown>;
-  const update = payload.update.bind(payload) as unknown as (
-    options: Record<string, unknown>,
-  ) => Promise<unknown>;
+  const find = payload.find.bind(payload) as unknown as PayloadFind;
+  const create = payload.create.bind(payload) as unknown as PayloadCreate;
+  const update = payload.update.bind(payload) as unknown as PayloadUpdate;
 
-  const categories = (
-    await find({
-      collection: categoryCollectionSlug,
-      depth: 0,
-      pagination: false,
-      ...requestOptions,
-    })
-  ).docs as LegacyMediaCategory[];
+  const categories = await findCategories({
+    categoryCollectionSlug,
+    find,
+    requestOptions,
+  });
 
   const categoryNameCounts = categories.reduce((counts, category) => {
     counts.set(category.name, (counts.get(category.name) ?? 0) + 1);
@@ -126,53 +265,29 @@ export async function migrateMediaCategoriesToFolders({
 
     const folderName = folderNameForCategory(category, categoryNameCounts);
     const parentFolder = parentFolderID ?? null;
-    const existingFolders = (
-      await find({
-        collection: folderCollectionSlug,
-        depth: 0,
-        limit: 100,
-        where: {
-          name: {
-            equals: folderName,
-          },
-          [folderFieldName]:
-            parentFolder === null
-              ? {
-                  exists: false,
-                }
-              : {
-                  equals: parentFolder,
-                },
-        },
-        ...requestOptions,
-      })
-    ).docs as FolderDocument[];
-    const folder = existingFolders.find(
-      (existingFolder) =>
-        folderMatchesParent(existingFolder, parentFolder) &&
-        (!folderType ||
-          !existingFolder.folderType ||
-          existingFolder.folderType.length === 0 ||
-          existingFolder.folderType.includes(folderType)),
-    );
+    const folder = await findReusableFolder({
+      find,
+      folderCollectionSlug,
+      folderFieldName,
+      folderName,
+      folderType,
+      parentFolder,
+      requestOptions,
+    });
 
     const folderID =
       folder?.id ??
       (dryRun
         ? `dry-run:${category.id}`
-        : relationshipID(
-            await create({
-              collection: folderCollectionSlug,
-              data: {
-                name: folderName,
-                ...(parentFolder === null
-                  ? {}
-                  : { [folderFieldName]: parentFolder }),
-                ...(folderType ? { folderType: [folderType] } : {}),
-              },
-              ...requestOptions,
-            }),
-          ));
+        : await createFolder({
+            create,
+            folderCollectionSlug,
+            folderFieldName,
+            folderName,
+            folderType,
+            parentFolder,
+            requestOptions,
+          }));
 
     if (!folderID) {
       throw new Error(
@@ -186,19 +301,12 @@ export async function migrateMediaCategoriesToFolders({
       result.foldersCreated += 1;
     }
 
-    const media = (
-      await find({
-        collection: mediaCollectionSlug,
-        depth: 0,
-        pagination: false,
-        where: {
-          category: {
-            equals: category.id,
-          },
-        },
-        ...requestOptions,
-      })
-    ).docs as MediaWithLegacyCategory[];
+    const media = await findMediaForCategory({
+      categoryID: category.id,
+      find,
+      mediaCollectionSlug,
+      requestOptions,
+    });
 
     for (const mediaItem of media) {
       if (relationshipID(mediaItem[folderFieldName])) {

@@ -92,6 +92,19 @@ cmsPlugin({
 });
 ```
 
+```ts
+import { migrateMediaCategoriesToFolders } from "@fxmk/cms-plugin";
+
+await migrateMediaCategoriesToFolders({
+  payload,
+  req,
+});
+```
+
+By default the migration helper creates or reuses top-level folders. Pass
+`parentFolderID` if migrated category folders should live under a specific
+existing folder.
+
 ## Building the Plugin
 
 When you build a plugin, you are purely building a feature for your project and

@@ -187,6 +187,42 @@ describe("migrateMediaCategoriesToFolders", () => {
     expect(payload.update).not.toHaveBeenCalled();
   });
 
+  it("reuses top-level folders with an explicit null parent", async () => {
+    const payload = {
+      create: vi.fn(),
+      find: vi.fn(async (options) => {
+        if (options.collection === "mediaCategory") {
+          return { docs: [{ id: "category-1", name: "Rooms" }] };
+        }
+
+        if (options.collection === "payload-folders") {
+          return {
+            docs: [
+              {
+                folder: null,
+                folderType: ["media"],
+                id: "folder-1",
+                name: "Rooms",
+              },
+            ],
+          };
+        }
+
+        return { docs: [{ id: "media-1" }] };
+      }),
+      update: vi.fn(async () => ({})),
+    } as unknown as Payload;
+
+    await migrateMediaCategoriesToFolders({ payload });
+
+    expect(payload.create).not.toHaveBeenCalled();
+    expect(payload.update).toHaveBeenCalledWith({
+      collection: "media",
+      data: { folder: "folder-1" },
+      id: "media-1",
+    });
+  });
+
   it("does not reuse nested folders when migrating to top-level folders", async () => {
     const payload = {
       create: vi.fn(async () => ({ id: "top-level-folder" })),
