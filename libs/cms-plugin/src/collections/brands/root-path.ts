@@ -12,6 +12,14 @@ import {
 } from "../../common/pathname.js";
 import { textField } from "../../fields/text.js";
 
+export type LocalizedRootPath = Record<string, string>;
+type TextValidationOptions = ValidateOptions<
+  unknown,
+  unknown,
+  TextField,
+  string
+>;
+
 export function rootPathField() {
   return textField({
     name: "rootPath",
@@ -23,10 +31,7 @@ export function rootPathField() {
       placeholder: "e.g. /brand-name",
     },
     hooks: {
-      beforeValidate: [
-        ({ value }) =>
-          typeof value === "string" ? normalizePathnameInput(value) : value,
-      ],
+      beforeValidate: [({ value }) => normalizeRootPathValue(value)],
     },
     label: {
       en: "Root Path",
@@ -37,21 +42,54 @@ export function rootPathField() {
 }
 
 async function validateRootPath(
-  value: null | string | undefined,
+  value: LocalizedRootPath | null | string | undefined,
   options: ValidateOptions<
     Record<string, unknown>,
     Record<string, unknown>,
     TextField,
-    string
+    LocalizedRootPath | string
   >,
 ) {
-  const defaultValidationResult = text(value, options);
+  const values = getRootPathValuesForValidation(value);
+  const textValidationOptions = options as unknown as TextValidationOptions;
+
+  if (values === null) {
+    return text(undefined, textValidationOptions);
+  }
+
+  if (typeof values === "string") {
+    return validateRootPathValue(values, options);
+  }
+
+  for (const rootPath of Object.values(values)) {
+    const validationResult = await validateRootPathValue(rootPath, options);
+    if (validationResult !== true) {
+      return validationResult;
+    }
+  }
+
+  return true;
+}
+
+async function validateRootPathValue(
+  value: string,
+  options: ValidateOptions<
+    Record<string, unknown>,
+    Record<string, unknown>,
+    TextField,
+    LocalizedRootPath | string
+  >,
+) {
+  const defaultValidationResult = text(
+    value,
+    options as unknown as TextValidationOptions,
+  );
   if (defaultValidationResult !== true) {
     return defaultValidationResult;
   }
 
   const t = options.req.t as unknown as TFunction<TranslationsKey>;
-  const rootPath = normalizePathnameInput(value ?? "");
+  const rootPath = normalizePathnameInput(value);
   const formatValidationResult = validateRootPathFormat(rootPath);
 
   if (formatValidationResult !== true) {
@@ -66,6 +104,44 @@ async function validateRootPath(
   }
 
   return true;
+}
+
+export function normalizeRootPathValue(value: unknown) {
+  if (typeof value === "string") {
+    return normalizePathnameInput(value);
+  }
+
+  if (!isPlainObject(value)) {
+    return value;
+  }
+
+  return Object.fromEntries(
+    Object.entries(value).map(([localeId, localizedValue]) => [
+      localeId,
+      typeof localizedValue === "string"
+        ? normalizePathnameInput(localizedValue)
+        : localizedValue,
+    ]),
+  );
+}
+
+export function resolveRootPathForLocale(
+  rootPath: unknown,
+  localeId: string | undefined,
+) {
+  if (typeof rootPath === "string") {
+    return normalizePathnameInput(rootPath);
+  }
+
+  if (!localeId || !isPlainObject(rootPath)) {
+    return undefined;
+  }
+
+  const localizedRootPath = rootPath[localeId];
+
+  return typeof localizedRootPath === "string"
+    ? normalizePathnameInput(localizedRootPath)
+    : undefined;
 }
 
 export async function getBrandsWithOverlappingRootPath(
@@ -98,19 +174,15 @@ export function rootPathsOverlap(rootPathA: string, rootPathB: string) {
   );
 }
 
-function getLocalizedRootPaths(rootPath: unknown, localeIds: string[]) {
-  if (typeof rootPath === "string") {
-    return [rootPath];
-  }
-
-  if (!rootPath || typeof rootPath !== "object" || Array.isArray(rootPath)) {
+export function getLocalizedRootPaths(rootPath: unknown, localeIds: string[]) {
+  if (!isPlainObject(rootPath)) {
     return [];
   }
 
   return localeIds.flatMap((localeId) => {
-    const localizedRootPath = (rootPath as Record<string, unknown>)[localeId];
+    const localizedRootPath = resolveRootPathForLocale(rootPath, localeId);
 
-    return typeof localizedRootPath === "string" ? [localizedRootPath] : [];
+    return localizedRootPath ? [localizedRootPath] : [];
   });
 }
 
@@ -132,4 +204,32 @@ export async function getPublishedLocaleIds(req: PayloadRequest) {
   return publishedLocales
     .map((locale) => (typeof locale === "string" ? locale : locale.id))
     .filter((localeId): localeId is string => Boolean(localeId));
+}
+
+function getRootPathValuesForValidation(
+  value: LocalizedRootPath | null | string | undefined,
+) {
+  if (typeof value === "string") {
+    return normalizePathnameInput(value);
+  }
+
+  if (isLocalizedRootPath(value)) {
+    return value;
+  }
+
+  return null;
+}
+
+function isLocalizedRootPath(value: unknown): value is LocalizedRootPath {
+  return (
+    isPlainObject(value) &&
+    Object.keys(value).length > 0 &&
+    Object.values(value).every((localizedValue) => {
+      return typeof localizedValue === "string";
+    })
+  );
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
 }

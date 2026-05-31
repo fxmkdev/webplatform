@@ -29,4 +29,8 @@ describe("brand home link helpers", () => {
       ),
     ).toEqual([{ localeId: "en", rootPath: "/brand" }]);
   });
+
+  it("ignores scalar root paths in locale-all helpers", () => {
+    expect(getRootPathsByLocale("/brand", ["en", "es"])).toEqual([]);
+  });
 });

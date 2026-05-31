@@ -23,6 +23,7 @@ import { textField } from "../../fields/text.js";
 import { textareaField } from "../../fields/textarea.js";
 import { contentGroup } from "../../groups.js";
 import { getPageBrandId, syncBrandHomeLink } from "../brands/home-link.js";
+import { resolveRootPathForLocale } from "../brands/root-path.js";
 import {
   getLocalizedPathnameEndpoint,
   getPagesForPathname,
@@ -268,8 +269,14 @@ export function Pages({
             },
           });
 
-          const brandRootPath =
-            typeof brand.rootPath === "string" ? brand.rootPath : undefined;
+          const localization = req.payload.config.localization;
+          const locale =
+            req.locale ??
+            (localization ? localization.defaultLocale : undefined);
+          const brandRootPath = resolveRootPathForLocale(
+            brand.rootPath,
+            locale,
+          );
           const pageRelationship = brand.homeLink as
             | Record<string, unknown>
             | undefined;

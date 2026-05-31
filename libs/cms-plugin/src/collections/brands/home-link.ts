@@ -1,6 +1,9 @@
 import type { PayloadRequest } from "payload";
 
-import { getPublishedLocaleIds } from "./root-path.js";
+import {
+  getPublishedLocaleIds,
+  resolveRootPathForLocale,
+} from "./root-path.js";
 
 function getRelationshipId(value: unknown) {
   if (typeof value === "string") {
@@ -68,6 +71,9 @@ export async function syncBrandHomeLink({
   });
 
   const homePage = homePages.docs[0];
+  const locale = req.payload.config.localization
+    ? req.payload.config.localization.defaultLocale
+    : req.locale;
 
   await req.payload.update({
     id: brandId,
@@ -80,25 +86,20 @@ export async function syncBrandHomeLink({
           }
         : {},
     },
+    locale,
     overrideAccess: true,
     req,
   });
 }
 
 export function getRootPathsByLocale(rootPath: unknown, localeIds: string[]) {
-  if (typeof rootPath === "string") {
-    return localeIds.map((localeId) => ({ localeId, rootPath }));
-  }
-
   if (!rootPath || typeof rootPath !== "object" || Array.isArray(rootPath)) {
     return [];
   }
 
   return localeIds.flatMap((localeId) => {
-    const localizedRootPath = (rootPath as Record<string, unknown>)[localeId];
+    const localizedRootPath = resolveRootPathForLocale(rootPath, localeId);
 
-    return typeof localizedRootPath === "string"
-      ? [{ localeId, rootPath: localizedRootPath }]
-      : [];
+    return localizedRootPath ? [{ localeId, rootPath: localizedRootPath }] : [];
   });
 }

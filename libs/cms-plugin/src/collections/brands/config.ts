@@ -14,7 +14,7 @@ import { showField } from "../../fields/show.js";
 import { textField } from "../../fields/text.js";
 import { contentGroup } from "../../groups.js";
 import { syncBrandHomeLink } from "./home-link.js";
-import { rootPathField } from "./root-path.js";
+import { resolveRootPathForLocale, rootPathField } from "./root-path.js";
 import { brandUsagesField } from "./usages.js";
 
 type BrandsOptions = {
@@ -47,7 +47,7 @@ export function Brands({
             }) => {
               return getLivePreviewUrl(
                 livePreviewBaseUrl,
-                typeof data.rootPath === "string" ? data.rootPath : "/",
+                resolveRootPathForLocale(data.rootPath, locale.code) ?? "/",
                 `brands/${data.id as string}`,
                 locale.code,
               );
