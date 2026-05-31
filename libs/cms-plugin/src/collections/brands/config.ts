@@ -27,7 +27,7 @@ export function Brands({
   return {
     slug: "brands",
     access: {
-      create: ({ req }) => isAdmin(req),
+      create: canManageContent,
       delete: ({ req }) => isAdmin(req),
       update: canManageContent,
     },
