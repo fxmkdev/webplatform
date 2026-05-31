@@ -1,4 +1,4 @@
-import type { Block, Config, Field, Plugin } from "payload";
+import type { Block, CollectionConfig, Config, Field, Plugin } from "payload";
 
 import { s3Storage } from "@payloadcms/storage-s3";
 
@@ -28,8 +28,15 @@ export * from "./groups.js";
 
 export type CmsPluginMediaOrganization = "categories" | "folders" | "none";
 
+type CmsPluginFolderCollection = Omit<CollectionConfig, "trash">;
+
 export type CmsPluginMediaFoldersOptions = {
   browseByFolder?: boolean;
+  collectionOverrides?: (({
+    collection,
+  }: {
+    collection: CmsPluginFolderCollection;
+  }) => CmsPluginFolderCollection | Promise<CmsPluginFolderCollection>)[];
   collectionSpecific?: boolean;
   debug?: boolean;
   fieldName?: string;

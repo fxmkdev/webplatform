@@ -84,6 +84,24 @@ describe("media organization config", () => {
       transitionalConfig.collections?.map((collection) => collection.slug),
     ).toContain("mediaCategory");
   });
+
+  it("passes folder collection overrides through to Payload folders config", () => {
+    const collectionOverride = vi.fn(({ collection }) => collection);
+    const config = cmsPlugin({
+      media: {
+        folders: {
+          collectionOverrides: [collectionOverride],
+        },
+        organization: "folders",
+      },
+      mediaS3Storage: mediaS3Storage(),
+    })({});
+
+    expect(config.folders).toMatchObject({
+      browseByFolder: true,
+      collectionOverrides: [collectionOverride],
+    });
+  });
 });
 
 describe("migrateMediaCategoriesToFolders", () => {
