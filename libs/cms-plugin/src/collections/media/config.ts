@@ -7,6 +7,20 @@ import { translated } from "../../translations/translations.js";
 import { generateAltTextEndpoint } from "./generate-alt-text-endpoint.js";
 import { mediaUsagesField } from "./usages.js";
 
+function categoryField({ hidden }: { hidden: boolean }): Field {
+  return {
+    name: "category",
+    type: "relationship",
+    admin: {
+      description: translated("cmsPlugin:media:category:description"),
+      hidden,
+      position: "sidebar",
+    },
+    label: translated("cmsPlugin:media:category:label"),
+    relationTo: "mediaCategory",
+  };
+}
+
 export function Media({
   generateAltTextOptions,
   organization = "categories",
@@ -20,19 +34,7 @@ export function Media({
     organization === "categories" || retainLegacyCategories;
   const fields: Field[] = [
     ...(includeCategoryField
-      ? [
-          {
-            name: "category",
-            type: "relationship" as const,
-            admin: {
-              description: translated("cmsPlugin:media:category:description"),
-              hidden: organization !== "categories",
-              position: "sidebar" as const,
-            },
-            label: translated("cmsPlugin:media:category:label"),
-            relationTo: "mediaCategory",
-          },
-        ]
+      ? [categoryField({ hidden: organization !== "categories" })]
       : []),
 
     {
