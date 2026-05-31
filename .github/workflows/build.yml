@@ -72,29 +72,12 @@ jobs:
           name: common-dist
           path: libs/common/dist
 
-  cms-example-build:
-    name: "cms-example: Build"
-    runs-on: ubuntu-latest
-    needs: [cms-plugin-build]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-      - name: Setup
-        uses: ./.github/actions/setup
-      - name: Download cms-plugin 'dist' directory
-        uses: actions/download-artifact@v8
-        with:
-          name: cms-plugin-dist
-          path: libs/cms-plugin/dist
-      - name: Install dependencies
-        run: pnpm --filter cms-example --filter cms-plugin install
-      - name: Build
-        run: pnpm --filter cms-example build
-
   cms-example-build-push:
     name: "cms-example: Build and Push"
     runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    if: >
+      github.ref == 'refs/heads/main' || (github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == github.repository)
     needs: [version]
     outputs:
       image: ${{ steps.image-name.outputs.image }}
@@ -193,7 +176,6 @@ jobs:
       - quality
       - cms-plugin-build
       - common-build
-      - cms-example-build
       - cms-example-image-ready
     environment:
       name: staging-cms-example
@@ -242,7 +224,7 @@ jobs:
       - quality
       - cms-plugin-build
       - common-build
-      - cms-example-build
+      - cms-example-build-push
       - version
     if: needs.version.outputs.is_new_release == 'true'
     permissions:
