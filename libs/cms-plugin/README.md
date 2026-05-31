@@ -57,6 +57,67 @@ The initialization process goes in the following order:
 4. Sanitization cleans and validates data
 5. Final config gets initialized
 
+### Media organization
+
+The plugin organizes uploads with the legacy media category collection by
+default. Consumers can opt into Payload's native folders, or disable built-in
+media organization entirely:
+
+```ts
+cmsPlugin({
+  media: {
+    organization: "folders",
+  },
+  mediaS3Storage: {
+    accessKeyId: process.env.MEDIA_S3_ACCESS_KEY_ID || "",
+    bucket: process.env.MEDIA_S3_BUCKET || "",
+    region: process.env.MEDIA_S3_REGION || "",
+    secretAccessKey: process.env.MEDIA_S3_SECRET_ACCESS_KEY || "",
+  },
+});
+```
+
+Available organization modes:
+
+- `"categories"` keeps the existing `mediaCategory` collection and `category`
+  relationship field. This is the default.
+- `"folders"` enables Payload folders on the `media` collection and the
+  browse-by-folder admin view.
+- `"none"` leaves media without plugin-provided categories or folders.
+
+For existing projects migrating from categories to folders, deploy once with
+`retainLegacyCategories: true`, run a Payload migration that calls
+`migrateMediaCategoriesToFolders`, verify the media folder assignments, and then
+remove `retainLegacyCategories`.
+
+```ts
+cmsPlugin({
+  media: {
+    organization: "folders",
+    retainLegacyCategories: true,
+  },
+  mediaS3Storage: {
+    accessKeyId: process.env.MEDIA_S3_ACCESS_KEY_ID || "",
+    bucket: process.env.MEDIA_S3_BUCKET || "",
+    region: process.env.MEDIA_S3_REGION || "",
+    secretAccessKey: process.env.MEDIA_S3_SECRET_ACCESS_KEY || "",
+  },
+});
+```
+
+```ts
+import { migrateMediaCategoriesToFolders } from "@fxmk/cms-plugin";
+
+await migrateMediaCategoriesToFolders({
+  payload,
+  req,
+});
+```
+
+By default the migration helper creates or reuses top-level folders. Pass
+`parentFolderID` if migrated category folders should live under a specific
+existing folder.
+
 ## Building the Plugin
 
 When you build a plugin, you are purely building a feature for your project and

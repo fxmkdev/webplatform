@@ -1,4 +1,4 @@
-import type { Block, Config, Field, Plugin } from "payload";
+import type { Block, CollectionConfig, Config, Field, Plugin } from "payload";
 
 import { s3Storage } from "@payloadcms/storage-s3";
 
@@ -21,9 +21,33 @@ import { Common } from "./globals/common/config.js";
 import { Settings } from "./globals/settings/config.js";
 import { translations } from "./translations/translations.js";
 
+export * from "./collections/media/migrate-categories-to-folders.js";
 export * from "./common/index.js";
 export * from "./fields/index.js";
 export * from "./groups.js";
+
+export type CmsPluginMediaOrganization = "categories" | "folders" | "none";
+
+type CmsPluginFolderCollection = Omit<CollectionConfig, "trash">;
+
+export type CmsPluginMediaFoldersOptions = {
+  browseByFolder?: boolean;
+  collectionOverrides?: (({
+    collection,
+  }: {
+    collection: CmsPluginFolderCollection;
+  }) => CmsPluginFolderCollection | Promise<CmsPluginFolderCollection>)[];
+  collectionSpecific?: boolean;
+  debug?: boolean;
+  fieldName?: string;
+  slug?: string;
+};
+
+export type CmsPluginMediaOptions = {
+  folders?: CmsPluginMediaFoldersOptions;
+  organization?: CmsPluginMediaOrganization;
+  retainLegacyCategories?: boolean;
+};
 
 export type CmsPluginOptions = {
   additionalContentBlocks?: Block[];
@@ -32,6 +56,7 @@ export type CmsPluginOptions = {
   deeplApiKey?: string;
   e2eTestsApiKey?: string;
   livePreviewBaseUrl?: string;
+  media?: CmsPluginMediaOptions;
   mediaS3Storage: {
     accessKeyId: string;
     bucket: string;
@@ -51,6 +76,7 @@ export const cmsPlugin =
     deeplApiKey,
     e2eTestsApiKey,
     livePreviewBaseUrl,
+    media,
     mediaS3Storage,
     openaiApiKey,
     publicMediaBaseUrl,
@@ -69,14 +95,36 @@ export const cmsPlugin =
       initializeOpenAI({ apiKey: openaiApiKey });
     }
 
+    const mediaOrganization = media?.organization ?? "categories";
+    const retainLegacyCategories =
+      mediaOrganization === "folders" && media?.retainLegacyCategories === true;
+
+    if (mediaOrganization === "folders") {
+      const currentFolders =
+        config.folders === false ? undefined : config.folders;
+
+      config.folders = {
+        ...currentFolders,
+        ...media?.folders,
+        browseByFolder:
+          media?.folders?.browseByFolder ??
+          currentFolders?.browseByFolder ??
+          true,
+      };
+    }
+
     config.collections.push(
       Media({
         generateAltTextOptions: publicMediaBaseUrl
           ? { publicMediaBaseUrl }
           : undefined,
+        organization: mediaOrganization,
+        retainLegacyCategories,
       }),
     );
-    config.collections.push(MediaCategories);
+    if (mediaOrganization === "categories" || retainLegacyCategories) {
+      config.collections.push(MediaCategories);
+    }
     config.collections.push(Users);
     config.collections.push(ApiKeys);
     config.collections.push(LocaleConfigs);
