@@ -2,4 +2,4 @@
 # does not seem to work reliably without specifying a config file)
 
 [build]
-  dockerfile = 'examples/cms-example/Dockerfile'
+  dockerfile = 'Dockerfile'
