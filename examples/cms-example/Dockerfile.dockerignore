@@ -1,0 +1,24 @@
+# Ignore everything
+**
+
+# But include the necessary parts
+!package.json
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+!.npmrc
+!/examples/cms-example
+!/libs/cms-plugin
+!/libs/common
+
+# These should be ignored, though
+**/.cms-cache
+**/.next
+**/.react-router
+**/build
+**/dist
+**/node_modules
+**/tests
+**/.env*
+**/tsconfig.tsbuildinfo
+**/.vscode
+**/.DS_Store

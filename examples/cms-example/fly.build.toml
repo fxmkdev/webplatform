@@ -1,0 +1,5 @@
+# Dummy Dockerfile for Fly-/Depot-based Docker build (`fly deploy --dockerfile … --build-only –`
+# does not seem to work reliably without specifying a config file)
+
+[build]
+  dockerfile = 'Dockerfile'
