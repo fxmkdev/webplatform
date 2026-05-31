@@ -13,6 +13,7 @@ type MediaWithLegacyCategory = {
 };
 
 type FolderDocument = {
+  folder?: FolderDocument | ID | null;
   folderType?: string[];
   id: ID;
   name: string;
@@ -25,6 +26,7 @@ export type MigrateMediaCategoriesToFoldersOptions = {
   folderFieldName?: string;
   folderType?: false | string;
   mediaCollectionSlug?: string;
+  parentFolderID?: ID;
   payload: Payload;
   req?: PayloadRequest;
 };
@@ -57,6 +59,13 @@ function relationshipID(value: unknown): ID | undefined {
   return undefined;
 }
 
+function folderMatchesParent(
+  folder: FolderDocument,
+  parentFolderID: ID | null,
+) {
+  return (relationshipID(folder.folder) ?? null) === parentFolderID;
+}
+
 function folderNameForCategory(
   category: LegacyMediaCategory,
   categoryNameCounts: Map<string, number>,
@@ -74,6 +83,7 @@ export async function migrateMediaCategoriesToFolders({
   folderFieldName = "folder",
   folderType = "media",
   mediaCollectionSlug = "media",
+  parentFolderID,
   payload,
   req,
 }: MigrateMediaCategoriesToFoldersOptions): Promise<MigrateMediaCategoriesToFoldersResult> {
@@ -115,6 +125,7 @@ export async function migrateMediaCategoriesToFolders({
     result.categoriesProcessed += 1;
 
     const folderName = folderNameForCategory(category, categoryNameCounts);
+    const parentFolder = parentFolderID ?? null;
     const existingFolders = (
       await find({
         collection: folderCollectionSlug,
@@ -124,16 +135,25 @@ export async function migrateMediaCategoriesToFolders({
           name: {
             equals: folderName,
           },
+          [folderFieldName]:
+            parentFolder === null
+              ? {
+                  exists: false,
+                }
+              : {
+                  equals: parentFolder,
+                },
         },
         ...requestOptions,
       })
     ).docs as FolderDocument[];
     const folder = existingFolders.find(
       (existingFolder) =>
-        !folderType ||
-        !existingFolder.folderType ||
-        existingFolder.folderType.length === 0 ||
-        existingFolder.folderType.includes(folderType),
+        folderMatchesParent(existingFolder, parentFolder) &&
+        (!folderType ||
+          !existingFolder.folderType ||
+          existingFolder.folderType.length === 0 ||
+          existingFolder.folderType.includes(folderType)),
     );
 
     const folderID =
@@ -145,6 +165,9 @@ export async function migrateMediaCategoriesToFolders({
               collection: folderCollectionSlug,
               data: {
                 name: folderName,
+                ...(parentFolder === null
+                  ? {}
+                  : { [folderFieldName]: parentFolder }),
                 ...(folderType ? { folderType: [folderType] } : {}),
               },
               ...requestOptions,

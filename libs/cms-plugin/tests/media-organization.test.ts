@@ -186,4 +186,90 @@ describe("migrateMediaCategoriesToFolders", () => {
     expect(payload.create).not.toHaveBeenCalled();
     expect(payload.update).not.toHaveBeenCalled();
   });
+
+  it("does not reuse nested folders when migrating to top-level folders", async () => {
+    const payload = {
+      create: vi.fn(async () => ({ id: "top-level-folder" })),
+      find: vi.fn(async (options) => {
+        if (options.collection === "mediaCategory") {
+          return { docs: [{ id: "category-1", name: "Rooms" }] };
+        }
+
+        if (options.collection === "payload-folders") {
+          return {
+            docs: [
+              {
+                folder: "parent-folder",
+                folderType: ["media"],
+                id: "nested-folder",
+                name: "Rooms",
+              },
+            ],
+          };
+        }
+
+        return { docs: [{ id: "media-1" }] };
+      }),
+      update: vi.fn(async () => ({})),
+    } as unknown as Payload;
+
+    const result = await migrateMediaCategoriesToFolders({ payload });
+
+    expect(result).toMatchObject({
+      foldersCreated: 1,
+      foldersReused: 0,
+      mediaUpdated: 1,
+    });
+    expect(payload.create).toHaveBeenCalledWith({
+      collection: "payload-folders",
+      data: {
+        folderType: ["media"],
+        name: "Rooms",
+      },
+    });
+    expect(payload.update).toHaveBeenCalledWith({
+      collection: "media",
+      data: { folder: "top-level-folder" },
+      id: "media-1",
+    });
+  });
+
+  it("can reuse folders under a caller-specified parent", async () => {
+    const payload = {
+      create: vi.fn(),
+      find: vi.fn(async (options) => {
+        if (options.collection === "mediaCategory") {
+          return { docs: [{ id: "category-1", name: "Rooms" }] };
+        }
+
+        if (options.collection === "payload-folders") {
+          return {
+            docs: [
+              {
+                folder: "category-parent",
+                folderType: ["media"],
+                id: "nested-folder",
+                name: "Rooms",
+              },
+            ],
+          };
+        }
+
+        return { docs: [{ id: "media-1" }] };
+      }),
+      update: vi.fn(async () => ({})),
+    } as unknown as Payload;
+
+    await migrateMediaCategoriesToFolders({
+      parentFolderID: "category-parent",
+      payload,
+    });
+
+    expect(payload.create).not.toHaveBeenCalled();
+    expect(payload.update).toHaveBeenCalledWith({
+      collection: "media",
+      data: { folder: "nested-folder" },
+      id: "media-1",
+    });
+  });
 });
