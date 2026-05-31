@@ -71,10 +71,6 @@ export async function syncBrandHomeLink({
   });
 
   const homePage = homePages.docs[0];
-  const locale = req.payload.config.localization
-    ? req.payload.config.localization.defaultLocale
-    : req.locale;
-
   await req.payload.update({
     id: brandId,
     collection: "brands",
@@ -86,7 +82,7 @@ export async function syncBrandHomeLink({
           }
         : {},
     },
-    locale,
+    locale: "en",
     overrideAccess: true,
     req,
   });
