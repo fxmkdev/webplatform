@@ -9,6 +9,8 @@ import { RoomListBlock } from "./blocks/room-list/config";
 
 const filename = fileURLToPath(import.meta.url);
 const dirname = path.dirname(filename);
+const serverUrl = process.env.SERVER_URL;
+const livePreviewBaseUrl = process.env.LIVE_PREVIEW_BASE_URL || serverUrl;
 
 export default buildConfig({
   secret: process.env.PAYLOAD_SECRET || "",
@@ -27,13 +29,14 @@ export default buildConfig({
       deeplApiKey: process.env.DEEPL_API_KEY,
       openaiApiKey: process.env.OPENAI_API_KEY,
       publicMediaBaseUrl: process.env.PUBLIC_MEDIA_BASE_URL,
+      serverUrl,
       mediaS3Storage: {
         bucket: process.env.MEDIA_S3_BUCKET || "",
         accessKeyId: process.env.MEDIA_S3_ACCESS_KEY_ID || "",
         secretAccessKey: process.env.MEDIA_S3_SECRET_ACCESS_KEY || "",
         region: process.env.MEDIA_S3_REGION || "",
       },
-      livePreviewBaseUrl: "https://example.com",
+      livePreviewBaseUrl,
     }),
   ],
   i18n: {

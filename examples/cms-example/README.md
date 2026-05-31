@@ -34,6 +34,54 @@ on-screen instructions to login and create your first admin user. Then check out
 [Production](#production) once you're ready to build and serve your app, and
 [Deployment](#deployment) when you're ready to go live.
 
+## Staging deployment
+
+The staging app is deployed to Fly.io from the root `Build` GitHub Actions
+workflow on every non-PR build on `main`. The Fly app is stateless: MongoDB is
+external, media is stored in S3-compatible storage, and no Fly volume is
+required.
+
+Create the Fly app once:
+
+```bash
+flyctl apps create fxmk-webplatform-cms-example-staging --org <fly-org>
+```
+
+Set Fly app secrets:
+
+```bash
+flyctl secrets set --app fxmk-webplatform-cms-example-staging \
+  DATABASE_URI='mongodb+srv://...' \
+  PAYLOAD_SECRET='<openssl rand -hex 32>' \
+  MEDIA_S3_ACCESS_KEY_ID='...' \
+  MEDIA_S3_SECRET_ACCESS_KEY='...'
+```
+
+Optional feature secrets:
+
+```bash
+flyctl secrets set --app fxmk-webplatform-cms-example-staging \
+  OPENAI_API_KEY='...' \
+  DEEPL_API_KEY='...'
+```
+
+GitHub Actions requires the `FLY_API_TOKEN` secret and these repository
+variables:
+
+```text
+FLY_ORG=<fly-org>
+FLY_STAGING_CMS_EXAMPLE_APP=fxmk-webplatform-cms-example-staging
+FLY_PRIMARY_REGION=fra
+FLY_MIN_MACHINES_RUNNING=1
+FLY_MEMORY=1024
+FLY_CPU_KIND=shared
+FLY_CPUS=1
+MEDIA_S3_BUCKET=<existing-staging-safe-bucket>
+MEDIA_S3_REGION=<bucket-region>
+PUBLIC_MEDIA_BASE_URL=<public bucket/CDN base URL>
+SERVER_URL=https://fxmk-webplatform-cms-example-staging.fly.dev
+```
+
 #### Docker (Optional)
 
 If you prefer to use Docker for local development instead of a local MongoDB

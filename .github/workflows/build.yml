@@ -14,6 +14,7 @@ on:
 
 env:
   NODE_VERSION: 24
+  FLYCTL_VERSION: 0.4.52
 
 jobs:
   version:
@@ -89,6 +90,150 @@ jobs:
         run: pnpm --filter cms-example --filter cms-plugin install
       - name: Build
         run: pnpm --filter cms-example build
+
+  cms-example-build-push:
+    name: "cms-example: Build and Push"
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: [version]
+    outputs:
+      image: ${{ steps.image-name.outputs.image }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Set up flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@v1
+        with:
+          version: ${{ env.FLYCTL_VERSION }}
+      - name: Setup
+        uses: ./.github/actions/setup
+      - name: Set version on cms-example
+        run: |
+          pnpm version ${{ needs.version.outputs.version }} --git-tag-version false
+        working-directory: examples/cms-example
+      - name: Get cms-example image name
+        id: image-name
+        run: |
+          IMAGE_NAME=${{ vars.FLY_STAGING_CMS_EXAMPLE_APP }}
+          IMAGE_TAG=v${{ needs.version.outputs.version_with_sha }}
+          echo "image_name=$IMAGE_NAME" >> "$GITHUB_OUTPUT"
+          echo "image_tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+          echo "image=registry.fly.io/$IMAGE_NAME:$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+      - name: Build and push cms-example Docker image
+        run: |
+          flyctl deploy \
+            --app ${{ steps.image-name.outputs.image_name }} \
+            --config examples/cms-example/fly.build.toml \
+            --build-only \
+            --image-label ${{ steps.image-name.outputs.image_tag }} \
+            --label org.opencontainers.image.version=${{ steps.image-name.outputs.image_tag }} \
+            --push
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+  cms-example-image-ready:
+    name: "cms-example: Image Ready"
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs:
+      - version
+      - cms-example-build-push
+    steps:
+      - name: Log in to Fly registry
+        uses: docker/login-action@v4
+        with:
+          registry: registry.fly.io
+          username: x
+          password: ${{ secrets.FLY_API_TOKEN }}
+      - name: Wait for Fly registry image
+        run: |
+          set -euo pipefail
+
+          IMAGE="registry.fly.io/${{ vars.FLY_STAGING_CMS_EXAMPLE_APP }}:v${{ needs.version.outputs.version_with_sha }}"
+          MAX_ATTEMPTS=24
+          SLEEP_SECONDS=15
+          LAST_ERROR=""
+
+          for attempt in $(seq 1 "$MAX_ATTEMPTS"); do
+            ERROR_FILE="$(mktemp)"
+            if timeout 20s docker manifest inspect "$IMAGE" > /dev/null 2>"$ERROR_FILE"; then
+              rm -f "$ERROR_FILE"
+              echo "Image is available: $IMAGE"
+              exit 0
+            fi
+
+            ERROR_TEXT="$(tr '\n' ' ' < "$ERROR_FILE" | sed -E 's/[[:space:]]+/ /g')"
+            rm -f "$ERROR_FILE"
+            LAST_ERROR="$ERROR_TEXT"
+
+            if printf '%s' "$ERROR_TEXT" | grep -Eiq '(unauthorized|authentication required|denied|forbidden|insufficient_scope|access denied)'; then
+              echo "Registry auth/permission error while checking image: $IMAGE"
+              echo "docker manifest inspect error: $ERROR_TEXT"
+              exit 1
+            fi
+
+            if [ "$attempt" -lt "$MAX_ATTEMPTS" ]; then
+              echo "[$attempt/$MAX_ATTEMPTS] Waiting for image: $IMAGE"
+              sleep "$SLEEP_SECONDS"
+            else
+              echo "Timed out waiting for image: $IMAGE"
+              if [ -n "$LAST_ERROR" ]; then
+                echo "Last docker manifest inspect error: $LAST_ERROR"
+              fi
+              exit 1
+            fi
+          done
+
+  cms-example-deploy:
+    name: "cms-example: Deploy"
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs:
+      - version
+      - quality
+      - cms-plugin-build
+      - common-build
+      - cms-example-build
+      - cms-example-image-ready
+    environment:
+      name: staging-cms-example
+      url: ${{ vars.SERVER_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Set up flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@v1
+        with:
+          version: ${{ env.FLYCTL_VERSION }}
+      - name: Prepare configuration file
+        run: |
+          envsubst \
+            < examples/cms-example/fly.template.toml \
+            > examples/cms-example/fly.generated.toml
+
+          echo "Generated configuration file:"
+          cat examples/cms-example/fly.generated.toml
+        env:
+          FLY_APP: ${{ vars.FLY_STAGING_CMS_EXAMPLE_APP }}
+          FLY_PRIMARY_REGION: ${{ vars.FLY_PRIMARY_REGION }}
+          FLY_MIN_MACHINES_RUNNING: ${{ vars.FLY_MIN_MACHINES_RUNNING }}
+          FLY_MEMORY: ${{ vars.FLY_MEMORY }}
+          FLY_CPU_KIND: ${{ vars.FLY_CPU_KIND }}
+          FLY_CPUS: ${{ vars.FLY_CPUS }}
+          MEDIA_S3_REGION: ${{ vars.MEDIA_S3_REGION }}
+          MEDIA_S3_BUCKET: ${{ vars.MEDIA_S3_BUCKET }}
+          PUBLIC_MEDIA_BASE_URL: ${{ vars.PUBLIC_MEDIA_BASE_URL }}
+          SERVER_URL: ${{ vars.SERVER_URL }}
+          LIVE_PREVIEW_BASE_URL:
+            ${{ vars.LIVE_PREVIEW_BASE_URL || vars.SERVER_URL }}
+      - name: Deploy cms-example
+        run: |
+          flyctl deploy \
+            --config examples/cms-example/fly.generated.toml \
+            --ha=false \
+            --image registry.fly.io/${{ vars.FLY_STAGING_CMS_EXAMPLE_APP }}:v${{ needs.version.outputs.version_with_sha }}
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
   create-release:
     name: Create release

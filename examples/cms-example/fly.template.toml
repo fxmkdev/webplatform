@@ -1,0 +1,26 @@
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = '$FLY_APP'
+primary_region = '$FLY_PRIMARY_REGION'
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = $FLY_MIN_MACHINES_RUNNING
+  processes = ['app']
+
+[[vm]]
+  memory = $FLY_MEMORY
+  cpu_kind = '$FLY_CPU_KIND'
+  cpus = $FLY_CPUS
+
+[env]
+  MEDIA_S3_REGION = '$MEDIA_S3_REGION'
+  MEDIA_S3_BUCKET = '$MEDIA_S3_BUCKET'
+  PUBLIC_MEDIA_BASE_URL = '$PUBLIC_MEDIA_BASE_URL'
+  SERVER_URL = '$SERVER_URL'
+  LIVE_PREVIEW_BASE_URL = '$LIVE_PREVIEW_BASE_URL'
