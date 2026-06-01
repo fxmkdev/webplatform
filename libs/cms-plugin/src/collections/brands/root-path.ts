@@ -154,7 +154,7 @@ export async function getBrandsWithOverlappingRootPath(
     collection: "brands",
     locale: "all",
     pagination: false,
-    req,
+    req: createIsolatedLocalRequest(req),
     select: {
       rootPath: true,
     },
@@ -232,4 +232,22 @@ function isLocalizedRootPath(value: unknown): value is LocalizedRootPath {
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return Boolean(value && typeof value === "object" && !Array.isArray(value));
+}
+
+export function createIsolatedLocalRequest(
+  req: PayloadRequest,
+): PayloadRequest {
+  const isolatedReq = Object.create(req) as PayloadRequest;
+
+  isolatedReq.context = { ...(req.context ?? {}) };
+  isolatedReq.query = { ...(req.query ?? {}) };
+  isolatedReq.routeParams = req.routeParams ? { ...req.routeParams } : {};
+  Object.defineProperty(isolatedReq, "payloadDataLoader", {
+    configurable: true,
+    enumerable: true,
+    value: undefined,
+    writable: true,
+  });
+
+  return isolatedReq;
 }
