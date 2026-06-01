@@ -22,7 +22,9 @@ import { PathnameField as PathnameField_4e4d92471a8ffe9293251f3f72fec394 } from 
 import { ToCell as ToCell_4e4d92471a8ffe9293251f3f72fec394 } from '@fxmk/cms-plugin/client'
 import { VersionInfo as VersionInfo_28fa94cce12a23e7fb2af3fe07ac7e9a } from '@fxmk/cms-plugin/rsc'
 import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
+import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
+/** @type import('payload').ImportMap */
 export const importMap = {
   "@fxmk/cms-plugin/client#TranslationsFieldLabel": TranslationsFieldLabel_4e4d92471a8ffe9293251f3f72fec394,
   "@fxmk/cms-plugin/client#GenerateAltTextButton": GenerateAltTextButton_4e4d92471a8ffe9293251f3f72fec394,
@@ -47,5 +49,6 @@ export const importMap = {
   "@fxmk/cms-plugin/client#PathnameField": PathnameField_4e4d92471a8ffe9293251f3f72fec394,
   "@fxmk/cms-plugin/client#ToCell": ToCell_4e4d92471a8ffe9293251f3f72fec394,
   "@fxmk/cms-plugin/rsc#VersionInfo": VersionInfo_28fa94cce12a23e7fb2af3fe07ac7e9a,
-  "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24
+  "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,
+  "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }
