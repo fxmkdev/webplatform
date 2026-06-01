@@ -22,6 +22,7 @@ type TextValidationOptions = ValidateOptions<
 
 export function rootPathField() {
   return textField({
+    enableTranslationTools: false,
     name: "rootPath",
     admin: {
       description: {

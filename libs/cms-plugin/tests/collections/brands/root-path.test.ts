@@ -42,6 +42,13 @@ async function validateRootPath(
 }
 
 describe("brand root path helpers", () => {
+  it("keeps localization without enabling translation tools", () => {
+    const field = rootPathField();
+
+    expect(field.localized).toBe(true);
+    expect(field.admin?.components?.Label).toBeUndefined();
+  });
+
   it("detects equal root paths as overlapping", () => {
     expect(rootPathsOverlap("/brand", "/brand")).toBe(true);
   });
