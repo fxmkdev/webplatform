@@ -1,6 +1,9 @@
+import type { PayloadRequest } from "payload";
+
 import { describe, expect, it } from "vitest";
 
 import {
+  getBrandsWithOverlappingRootPath,
   normalizeRootPathValue,
   resolveRootPathForLocale,
   rootPathField,
@@ -116,5 +119,47 @@ describe("brand root path helpers", () => {
         es: null,
       }),
     ).resolves.toBe("validation:required");
+  });
+
+  it("preserves the request locale while checking all localized root paths", async () => {
+    let localAPIReq: PayloadRequest | undefined;
+    const req = {
+      locale: "en",
+      payload: {
+        findGlobal: async () => ({
+          publishedLocales: {
+            publishedLocales: ["en", "es"],
+          },
+        }),
+        find: async (options: { req: PayloadRequest }) => {
+          localAPIReq = options.req;
+          options.req.locale = "all";
+
+          return {
+            docs: [
+              {
+                id: "brand",
+                rootPath: {
+                  en: "/existing",
+                  es: "/existente",
+                },
+              },
+            ],
+          };
+        },
+      },
+    } as unknown as PayloadRequest;
+
+    await getBrandsWithOverlappingRootPath(req, "/new");
+
+    expect(localAPIReq).toBeDefined();
+    if (!localAPIReq) {
+      throw new Error("Expected the nested brand lookup to run");
+    }
+
+    expect(localAPIReq).not.toBe(req);
+    expect(Object.getPrototypeOf(localAPIReq)).toBe(req);
+    expect(localAPIReq.locale).toBe("all");
+    expect(req.locale).toBe("en");
   });
 });

@@ -1,6 +1,7 @@
 import type { PayloadRequest } from "payload";
 
 import {
+  createIsolatedLocalRequest,
   getPublishedLocaleIds,
   resolveRootPathForLocale,
 } from "./root-path.js";
@@ -37,7 +38,7 @@ export async function syncBrandHomeLink({
     id: brandId,
     collection: "brands",
     locale: "all",
-    req,
+    req: createIsolatedLocalRequest(req),
     select: {
       rootPath: true,
     },
