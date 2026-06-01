@@ -9,6 +9,9 @@ const dirname = path.dirname(filename);
 const nextConfig = {
   output: "standalone",
   outputFileTracingRoot: path.join(dirname, "../.."),
+  async redirects() {
+    return [{ source: "/", destination: "/admin", permanent: false }];
+  },
   serverExternalPackages: ["jsdom"],
   webpack: (webpackConfig, { isServer }) => {
     if (isServer) {
