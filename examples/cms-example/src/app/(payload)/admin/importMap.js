@@ -1,6 +1,8 @@
 import { TranslationsFieldLabel as TranslationsFieldLabel_4e4d92471a8ffe9293251f3f72fec394 } from '@fxmk/cms-plugin/client'
 import { GenerateAltTextButton as GenerateAltTextButton_4e4d92471a8ffe9293251f3f72fec394 } from '@fxmk/cms-plugin/client'
 import { UsagesField as UsagesField_28fa94cce12a23e7fb2af3fe07ac7e9a } from '@fxmk/cms-plugin/rsc'
+import { FolderTableCell as FolderTableCell_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
+import { FolderField as FolderField_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { RscEntryLexicalField as RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { LexicalDiffComponent as LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
@@ -20,6 +22,7 @@ import { RowLabel as RowLabel_4e4d92471a8ffe9293251f3f72fec394 } from '@fxmk/cms
 import { DescriptionField as DescriptionField_28fa94cce12a23e7fb2af3fe07ac7e9a } from '@fxmk/cms-plugin/rsc'
 import { PathnameField as PathnameField_4e4d92471a8ffe9293251f3f72fec394 } from '@fxmk/cms-plugin/client'
 import { ToCell as ToCell_4e4d92471a8ffe9293251f3f72fec394 } from '@fxmk/cms-plugin/client'
+import { FolderTypeField as FolderTypeField_2b8867833a34864a02ddf429b0728a40 } from '@payloadcms/next/client'
 import { VersionInfo as VersionInfo_28fa94cce12a23e7fb2af3fe07ac7e9a } from '@fxmk/cms-plugin/rsc'
 import { S3ClientUploadHandler as S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24 } from '@payloadcms/storage-s3/client'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
@@ -29,6 +32,8 @@ export const importMap = {
   "@fxmk/cms-plugin/client#TranslationsFieldLabel": TranslationsFieldLabel_4e4d92471a8ffe9293251f3f72fec394,
   "@fxmk/cms-plugin/client#GenerateAltTextButton": GenerateAltTextButton_4e4d92471a8ffe9293251f3f72fec394,
   "@fxmk/cms-plugin/rsc#UsagesField": UsagesField_28fa94cce12a23e7fb2af3fe07ac7e9a,
+  "@payloadcms/next/rsc#FolderTableCell": FolderTableCell_f9c02e79a4aed9a3924487c0cd4cafb1,
+  "@payloadcms/next/rsc#FolderField": FolderField_f9c02e79a4aed9a3924487c0cd4cafb1,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#LexicalDiffComponent": LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e,
@@ -48,6 +53,7 @@ export const importMap = {
   "@fxmk/cms-plugin/rsc#DescriptionField": DescriptionField_28fa94cce12a23e7fb2af3fe07ac7e9a,
   "@fxmk/cms-plugin/client#PathnameField": PathnameField_4e4d92471a8ffe9293251f3f72fec394,
   "@fxmk/cms-plugin/client#ToCell": ToCell_4e4d92471a8ffe9293251f3f72fec394,
+  "@payloadcms/next/client#FolderTypeField": FolderTypeField_2b8867833a34864a02ddf429b0728a40,
   "@fxmk/cms-plugin/rsc#VersionInfo": VersionInfo_28fa94cce12a23e7fb2af3fe07ac7e9a,
   "@payloadcms/storage-s3/client#S3ClientUploadHandler": S3ClientUploadHandler_f97aa6c64367fa259c5bc0567239ef24,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1

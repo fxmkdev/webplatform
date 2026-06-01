@@ -69,7 +69,6 @@ export interface Config {
   blocks: {};
   collections: {
     media: Media;
-    mediaCategory: MediaCategory;
     users: User;
     'api-keys': ApiKey;
     'locale-configs': LocaleConfig;
@@ -78,18 +77,18 @@ export interface Config {
     redirects: Redirect;
     brands: Brand;
     'payload-kv': PayloadKv;
+    'payload-folders': FolderInterface;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
   collectionsJoins: {
-    mediaCategory: {
-      media: 'media';
+    'payload-folders': {
+      documentsAndFolders: 'payload-folders' | 'media';
     };
   };
   collectionsSelect: {
     media: MediaSelect<false> | MediaSelect<true>;
-    mediaCategory: MediaCategorySelect<false> | MediaCategorySelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'api-keys': ApiKeysSelect<false> | ApiKeysSelect<true>;
     'locale-configs': LocaleConfigsSelect<false> | LocaleConfigsSelect<true>;
@@ -98,6 +97,7 @@ export interface Config {
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     brands: BrandsSelect<false> | BrandsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
+    'payload-folders': PayloadFoldersSelect<false> | PayloadFoldersSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -593,9 +593,9 @@ export interface ApiKeyAuthOperations {
  */
 export interface Media {
   id: string;
-  category?: (string | null) | MediaCategory;
   comment?: string | null;
   alt?: string | null;
+  folder?: (string | null) | FolderInterface;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -620,16 +620,27 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "mediaCategory".
+ * via the `definition` "payload-folders".
  */
-export interface MediaCategory {
+export interface FolderInterface {
   id: string;
   name: string;
-  media?: {
-    docs?: (string | Media)[];
+  folder?: (string | null) | FolderInterface;
+  documentsAndFolders?: {
+    docs?: (
+      | {
+          relationTo?: 'payload-folders';
+          value: string | FolderInterface;
+        }
+      | {
+          relationTo?: 'media';
+          value: string | Media;
+        }
+    )[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
+  folderType?: 'media'[] | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1653,10 +1664,6 @@ export interface PayloadLockedDocument {
         value: string | Media;
       } | null)
     | ({
-        relationTo: 'mediaCategory';
-        value: string | MediaCategory;
-      } | null)
-    | ({
         relationTo: 'users';
         value: string | User;
       } | null)
@@ -1683,6 +1690,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'brands';
         value: string | Brand;
+      } | null)
+    | ({
+        relationTo: 'payload-folders';
+        value: string | FolderInterface;
       } | null);
   globalSlug?: string | null;
   user:
@@ -1741,9 +1752,9 @@ export interface PayloadMigration {
  * via the `definition` "media_select".
  */
 export interface MediaSelect<T extends boolean = true> {
-  category?: T;
   comment?: T;
   alt?: T;
+  folder?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -1769,16 +1780,6 @@ export interface MediaSelect<T extends boolean = true> {
               filename?: T;
             };
       };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "mediaCategory_select".
- */
-export interface MediaCategorySelect<T extends boolean = true> {
-  name?: T;
-  media?: T;
-  updatedAt?: T;
-  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2241,6 +2242,18 @@ export interface BrandsSelect<T extends boolean = true> {
 export interface PayloadKvSelect<T extends boolean = true> {
   key?: T;
   data?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-folders_select".
+ */
+export interface PayloadFoldersSelect<T extends boolean = true> {
+  name?: T;
+  folder?: T;
+  documentsAndFolders?: T;
+  folderType?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

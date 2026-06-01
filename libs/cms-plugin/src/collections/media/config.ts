@@ -1,4 +1,4 @@
-import type { CollectionConfig, Field } from "payload";
+import type { CollectionConfig, CollectionSlug, Field } from "payload";
 
 import { canManageContent } from "../../common/access-control.js";
 import { textareaField } from "../../fields/textarea.js";
@@ -8,6 +8,8 @@ import { generateAltTextEndpoint } from "./generate-alt-text-endpoint.js";
 import { mediaUsagesField } from "./usages.js";
 
 function categoryField({ hidden }: { hidden: boolean }): Field {
+  const relationTo = "mediaCategory" as unknown as CollectionSlug;
+
   return {
     name: "category",
     type: "relationship",
@@ -17,7 +19,7 @@ function categoryField({ hidden }: { hidden: boolean }): Field {
       position: "sidebar",
     },
     label: translated("cmsPlugin:media:category:label"),
-    relationTo: "mediaCategory",
+    relationTo,
   };
 }
 
