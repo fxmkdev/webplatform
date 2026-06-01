@@ -29,6 +29,9 @@ export default buildConfig({
       deeplApiKey: process.env.DEEPL_API_KEY,
       openaiApiKey: process.env.OPENAI_API_KEY,
       publicMediaBaseUrl: process.env.PUBLIC_MEDIA_BASE_URL,
+      media: {
+        organization: "folders",
+      },
       serverUrl,
       mediaS3Storage: {
         bucket: process.env.MEDIA_S3_BUCKET || "",

@@ -118,7 +118,9 @@ docs for details on how to extend this functionality.
 - #### Media
 
   This is the uploads enabled collection. It features pre-configured sizes,
-  focal point and manual resizing to help you manage your pictures.
+  focal point and manual resizing to help you manage your pictures. Media uses
+  Payload's native folders feature, including the browse-by-folder admin view,
+  to organize uploads.
 
 ### Docker
 
