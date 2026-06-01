@@ -22,7 +22,6 @@ type TextValidationOptions = ValidateOptions<
 
 export function rootPathField() {
   return textField({
-    enableTranslationTools: false,
     name: "rootPath",
     admin: {
       description: {
@@ -31,6 +30,7 @@ export function rootPathField() {
       },
       placeholder: "e.g. /brand-name",
     },
+    enableTranslationTools: false,
     hooks: {
       beforeValidate: [({ value }) => normalizeRootPathValue(value)],
     },
