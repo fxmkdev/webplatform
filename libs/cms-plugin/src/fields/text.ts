@@ -2,23 +2,31 @@ import type { TextField } from "payload";
 
 import { translated } from "../translations/translations.js";
 
-export function optionalTextField(config: Partial<TextField> = {}): TextField {
+type TextFieldConfig = {
+  enableTranslationTools?: boolean;
+} & Partial<TextField>;
+
+export function optionalTextField(config: TextFieldConfig = {}): TextField {
   return textField({ ...config, required: false });
 }
 
-export function textField(config: Partial<TextField> = {}): TextField {
+export function textField(config: TextFieldConfig = {}): TextField {
+  const { enableTranslationTools = true, ...fieldConfig } = config;
+
   return {
     name: "text",
     type: "text",
     label: translated("cmsPlugin:fields:text:label"),
     localized: true,
     required: true,
-    ...config,
+    ...fieldConfig,
     admin: {
-      ...config.admin,
+      ...fieldConfig.admin,
       components: {
-        Label: "@fxmk/cms-plugin/client#TranslationsFieldLabel",
-        ...config.admin?.components,
+        ...(enableTranslationTools
+          ? { Label: "@fxmk/cms-plugin/client#TranslationsFieldLabel" }
+          : {}),
+        ...fieldConfig.admin?.components,
       },
     },
   } as TextField;

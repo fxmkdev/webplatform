@@ -30,6 +30,7 @@ export function rootPathField() {
       },
       placeholder: "e.g. /brand-name",
     },
+    enableTranslationTools: false,
     hooks: {
       beforeValidate: [({ value }) => normalizeRootPathValue(value)],
     },
