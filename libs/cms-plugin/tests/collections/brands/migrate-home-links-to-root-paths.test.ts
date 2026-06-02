@@ -138,6 +138,72 @@ describe("migrateBrandHomeLinksToRootPaths", () => {
     expect(payload.update).not.toHaveBeenCalled();
   });
 
+  it("skips malformed scalar pathnames", async () => {
+    const payload = {
+      find: vi.fn(async () => ({
+        docs: [
+          {
+            homeLink: { doc: "page-1" },
+            id: "brand-1",
+          },
+        ],
+      })),
+      findByID: vi.fn(async () => ({
+        id: "page-1",
+        pathname: "brand",
+      })),
+      update: vi.fn(),
+    } as unknown as Payload;
+
+    const result = await migrateBrandHomeLinksToRootPaths({ payload });
+
+    expect(result).toMatchObject({
+      brandsProcessed: 1,
+      brandsSkipped: 1,
+      brandsUpdated: 0,
+    });
+    expect(payload.update).not.toHaveBeenCalled();
+  });
+
+  it("filters malformed localized pathnames before updating brands", async () => {
+    const payload = {
+      find: vi.fn(async () => ({
+        docs: [
+          {
+            homeLink: { doc: "page-1" },
+            id: "brand-1",
+          },
+        ],
+      })),
+      findByID: vi.fn(async () => ({
+        id: "page-1",
+        pathname: {
+          en: "/brand",
+          es: "/marca/",
+        },
+      })),
+      update: vi.fn(async () => ({})),
+    } as unknown as Payload;
+
+    const result = await migrateBrandHomeLinksToRootPaths({ payload });
+
+    expect(result).toMatchObject({
+      brandsProcessed: 1,
+      brandsSkipped: 0,
+      brandsUpdated: 1,
+    });
+    expect(payload.update).toHaveBeenCalledOnce();
+    expect(payload.update).toHaveBeenCalledWith({
+      collection: "brands",
+      data: {
+        rootPath: "/brand",
+      },
+      id: "brand-1",
+      locale: "en",
+      overrideAccess: true,
+    });
+  });
+
   it("reports missing home links without throwing", async () => {
     const payload = {
       find: vi.fn(async () => ({

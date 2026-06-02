@@ -1,5 +1,6 @@
 import type { Payload, PayloadRequest } from "payload";
 
+import { validateRootPathFormat } from "../../common/pathname.js";
 import { type LocalizedRootPath, normalizeRootPathValue } from "./root-path.js";
 
 type ID = number | string;
@@ -70,12 +71,19 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
   return Boolean(value && typeof value === "object" && !Array.isArray(value));
 }
 
+function isUsableRootPath(value: string) {
+  return value.length > 0 && validateRootPathFormat(value) === true;
+}
+
 function usableRootPath(
   value: unknown,
 ): LocalizedRootPath | string | undefined {
   const normalizedValue = normalizeRootPathValue(value);
 
-  if (typeof normalizedValue === "string" && normalizedValue) {
+  if (
+    typeof normalizedValue === "string" &&
+    isUsableRootPath(normalizedValue)
+  ) {
     return normalizedValue;
   }
 
@@ -86,7 +94,7 @@ function usableRootPath(
   const localizedRootPath = Object.fromEntries(
     Object.entries(normalizedValue).filter(
       (entry): entry is [string, string] =>
-        typeof entry[1] === "string" && entry[1].length > 0,
+        typeof entry[1] === "string" && isUsableRootPath(entry[1]),
     ),
   );
 
