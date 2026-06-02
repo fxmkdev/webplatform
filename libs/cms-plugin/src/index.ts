@@ -21,6 +21,7 @@ import { Common } from "./globals/common/config.js";
 import { Settings } from "./globals/settings/config.js";
 import { translations } from "./translations/translations.js";
 
+export * from "./collections/brands/migrate-home-links-to-root-paths.js";
 export * from "./collections/media/migrate-categories-to-folders.js";
 export * from "./common/index.js";
 export * from "./fields/index.js";

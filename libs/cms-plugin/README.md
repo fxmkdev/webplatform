@@ -15,6 +15,22 @@ localized pathname matches the brand's localized `rootPath`, that page becomes
 the derived home link. New consumers should not treat `homeLink` as the source
 of truth for a brand's URL prefix.
 
+For existing projects that already have production brands with `homeLink` data
+but no `rootPath`, deploy the plugin version that includes `rootPath`, then run
+a Payload migration that calls `migrateBrandHomeLinksToRootPaths` once.
+
+```ts
+import { migrateBrandHomeLinksToRootPaths } from "@fxmk/cms-plugin";
+
+await migrateBrandHomeLinksToRootPaths({
+  payload,
+  req,
+});
+```
+
+Review the returned skipped and missing counts before removing any legacy
+assumptions in your application.
+
 Payload is built with a robust infrastructure intended to support Plugins with
 ease. This provides a simple, modular, and reusable way for developers to extend
 the core capabilities of Payload.
