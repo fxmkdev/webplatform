@@ -7,7 +7,9 @@ A template repo to create a [Payload CMS](https://payloadcms.com) plugin.
 Brands own their URL namespace through the localized `rootPath` field. Use
 `rootPath` as the preferred public API for brand routing and URL-prefix logic.
 Every page assigned to a brand must use either the brand's root path itself or a
-child path below it.
+child path below it. Nested root paths are valid: for example, one default brand
+can own `/` while more specific brands own `/aqua` and `/azul`. When multiple
+brand root paths match a URL, the most specific root path wins.
 
 The `homeLink` field is kept for backwards compatibility with existing API
 consumers. It is hidden from editors and managed by the plugin: when a page's

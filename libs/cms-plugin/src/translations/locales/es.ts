@@ -206,6 +206,8 @@ export const es: TranslationsObject = {
         createRedirect:
           "Crear una redirección para esta ruta a la página seleccionada",
         lock: "Bloquear",
+        pathnameBelongsToMoreSpecificBrand:
+          "La ruta pertenece a la ruta raíz de marca más específica '{{ prefix }}'.",
         pathnameMustStartWithPrefix: `La ruta debe comenzar con '{{ prefix }}'.`,
         pleaseEnterAPathname: "Por favor, ingrese una ruta.",
         pleaseSelectABrandFirst: "Por favor, seleccione una marca primero.",

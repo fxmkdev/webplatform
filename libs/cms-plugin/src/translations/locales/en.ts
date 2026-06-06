@@ -203,6 +203,8 @@ export const en = {
         createRedirect:
           "Create a redirect from '{{ previousPathname }}' to this page.",
         lock: "Lock",
+        pathnameBelongsToMoreSpecificBrand:
+          "The pathname belongs to the more specific brand root path '{{ prefix }}'.",
         pathnameMustStartWithPrefix:
           "The pathname must start with '{{ prefix }}'.",
         pleaseEnterAPathname: "Please enter a pathname.",

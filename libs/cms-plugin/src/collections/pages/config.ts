@@ -23,7 +23,10 @@ import { textField } from "../../fields/text.js";
 import { textareaField } from "../../fields/textarea.js";
 import { contentGroup } from "../../groups.js";
 import { getPageBrandId, syncBrandHomeLink } from "../brands/home-link.js";
-import { resolveRootPathForLocale } from "../brands/root-path.js";
+import {
+  getMostSpecificBrandForPathname,
+  resolveRootPathForLocale,
+} from "../brands/root-path.js";
 import {
   getLocalizedPathnameEndpoint,
   getPagesForPathname,
@@ -250,7 +253,11 @@ export function Pages({
           const { id, req, siblingData } = options;
           const t = req.t as unknown as TFunction<TranslationsKey>;
 
-          if (!siblingData.brand) {
+          const brandId = getPageBrandId({
+            brand: siblingData.brand,
+          });
+
+          if (!brandId) {
             return t("cmsPlugin:pages:pathname:pleaseSelectABrandFirst");
           }
 
@@ -259,7 +266,7 @@ export function Pages({
           }
 
           const brand = await req.payload.findByID({
-            id: siblingData.brand as string,
+            id: brandId,
             collection: "brands",
             depth: 2,
             req,
@@ -291,6 +298,24 @@ export function Pages({
               return t("cmsPlugin:pages:pathname:pathnameMustStartWithPrefix", {
                 prefix: rootPath,
               });
+            }
+
+            const mostSpecificBrand = await getMostSpecificBrandForPathname({
+              localeId: locale,
+              pathname: value,
+              req,
+            });
+
+            if (
+              mostSpecificBrand &&
+              String(mostSpecificBrand.id) !== String(brandId)
+            ) {
+              return t(
+                "cmsPlugin:pages:pathname:pathnameBelongsToMoreSpecificBrand",
+                {
+                  prefix: mostSpecificBrand.rootPath,
+                },
+              );
             }
           }
 
