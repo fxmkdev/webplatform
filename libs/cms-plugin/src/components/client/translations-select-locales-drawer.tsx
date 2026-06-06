@@ -65,7 +65,7 @@ export function SelectLocalesDrawer({
               a: ({ children }) => (
                 <a
                   href="https://www.deepl.com"
-                  rel="noreferrer"
+                  rel="noreferrer noopener"
                   target="_blank"
                 >
                   {children}
