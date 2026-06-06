@@ -122,6 +122,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+      - name: Get cms-example package version
+        id: package-version
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./examples/cms-example/package.json').version")
+          echo "version=$PACKAGE_VERSION" >> "$GITHUB_OUTPUT"
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
       - name: Build cms-example Docker image
@@ -130,6 +135,8 @@ jobs:
           context: .
           file: examples/cms-example/Dockerfile
           push: false
+          build-args: |
+            APP_VERSION=${{ steps.package-version.outputs.version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

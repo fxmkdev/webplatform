@@ -59,4 +59,4 @@ EXPOSE 3000
 
 ENV PORT=3000
 
-CMD HOSTNAME="0.0.0.0" node examples/cms-example/.next/standalone/examples/cms-example/server.js
+CMD HOSTNAME="0.0.0.0" node examples/cms-example/server.js
