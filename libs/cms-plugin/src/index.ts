@@ -4,7 +4,10 @@ import { s3Storage } from "@payloadcms/storage-s3";
 
 import { ApiKeys } from "./collections/api-keys/config.js";
 import { Banners } from "./collections/banners/config.js";
-import { Brands } from "./collections/brands/config.js";
+import {
+  Brands,
+  type BrandThemeColorOption,
+} from "./collections/brands/config.js";
 import { LocaleConfigs } from "./collections/locale-configs/config.js";
 import { Media } from "./collections/media/config.js";
 import { MediaCategories } from "./collections/media-categories/config.js";
@@ -22,6 +25,7 @@ import { Settings } from "./globals/settings/config.js";
 import { translations } from "./translations/translations.js";
 
 export * from "./collections/brands/migrate-home-links-to-root-paths.js";
+export * from "./collections/brands/migrate-theme-colors.js";
 export * from "./collections/media/migrate-categories-to-folders.js";
 export * from "./common/index.js";
 export * from "./fields/index.js";
@@ -67,6 +71,7 @@ export type CmsPluginOptions = {
   openaiApiKey?: string;
   publicMediaBaseUrl?: string;
   serverUrl?: string;
+  themeColors?: BrandThemeColorOption[];
 };
 
 export const cmsPlugin =
@@ -82,6 +87,7 @@ export const cmsPlugin =
     openaiApiKey,
     publicMediaBaseUrl,
     serverUrl,
+    themeColors,
   }: CmsPluginOptions): Plugin =>
   (config: Config) => {
     if (!config.collections) {
@@ -138,7 +144,7 @@ export const cmsPlugin =
       }),
     );
     config.collections.push(Redirects);
-    config.collections.push(Brands({ livePreviewBaseUrl }));
+    config.collections.push(Brands({ livePreviewBaseUrl, themeColors }));
 
     if (!config.globals) {
       config.globals = [];

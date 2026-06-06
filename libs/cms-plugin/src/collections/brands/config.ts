@@ -17,13 +17,28 @@ import { syncBrandHomeLink } from "./home-link.js";
 import { resolveRootPathForLocale, rootPathField } from "./root-path.js";
 import { brandUsagesField } from "./usages.js";
 
+export type BrandThemeColorOption = {
+  label: Record<string, string> | string;
+  value: string;
+};
+
+const defaultThemeColorOptions: BrandThemeColorOption[] = [
+  { label: "Default", value: "default" },
+];
+
 type BrandsOptions = {
   livePreviewBaseUrl?: string;
+  themeColors?: BrandThemeColorOption[];
 };
 
 export function Brands({
   livePreviewBaseUrl,
+  themeColors,
 }: BrandsOptions): CollectionConfig {
+  const themeColorOptions = themeColors?.length
+    ? themeColors
+    : defaultThemeColorOptions;
+
   return {
     slug: "brands",
     access: {
@@ -32,7 +47,7 @@ export function Brands({
       update: canManageContent,
     },
     admin: {
-      defaultColumns: ["name", "rootPath", "logo", "updatedAt"],
+      defaultColumns: ["name", "rootPath", "themeColor", "logo", "updatedAt"],
       group: contentGroup,
       listSearchableFields: ["id", "name"],
       livePreview: livePreviewBaseUrl
@@ -62,6 +77,7 @@ export function Brands({
       baseTitle: true,
       homeLink: true,
       rootPath: true,
+      themeColor: true,
     },
     defaultSort: "name",
     fields: [
@@ -117,6 +133,23 @@ export function Brands({
                 required: false,
               }),
               rootPathField(),
+              {
+                name: "themeColor",
+                type: "select",
+                admin: {
+                  description: {
+                    en: "Choose the theme color used by the frontend for this brand.",
+                    es: "Elige el color de tema que usará el frontend para esta marca.",
+                  },
+                },
+                defaultValue: themeColorOptions[0]?.value ?? "default",
+                label: {
+                  en: "Theme Color",
+                  es: "Color de tema",
+                },
+                options: themeColorOptions,
+                required: true,
+              },
               textField({
                 name: "baseTitle",
                 admin: {
