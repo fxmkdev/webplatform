@@ -138,4 +138,27 @@ describe("migrateBrandThemeColors", () => {
       overrideAccess: true,
     });
   });
+
+  it("does not count default theme colors for skipped no-op updates", async () => {
+    const payload = {
+      find: vi.fn(async () => ({
+        docs: [{ id: "unmapped", themeColor: "default" }],
+      })),
+      update: vi.fn(),
+    } as unknown as Payload;
+
+    const result = await migrateBrandThemeColors({
+      overwriteExisting: true,
+      payload,
+    });
+
+    expect(result).toMatchObject({
+      brandsAlreadyMigrated: 1,
+      brandsProcessed: 1,
+      brandsSkipped: 1,
+      brandsUpdated: 0,
+      brandsUsingDefaultThemeColor: 0,
+    });
+    expect(payload.update).not.toHaveBeenCalled();
+  });
 });

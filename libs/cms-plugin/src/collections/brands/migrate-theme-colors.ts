@@ -109,14 +109,15 @@ export async function migrateBrandThemeColors({
 
     const mappedThemeColor = themeColorByBrandId[String(brand.id)];
     const themeColor = mappedThemeColor ?? defaultThemeColor;
-    if (!mappedThemeColor) {
-      result.brandsUsingDefaultThemeColor += 1;
-    }
 
     if (existingThemeColor === themeColor) {
       result.brandsAlreadyMigrated += 1;
       result.brandsSkipped += 1;
       continue;
+    }
+
+    if (!mappedThemeColor) {
+      result.brandsUsingDefaultThemeColor += 1;
     }
 
     result.brandsUpdated += 1;
