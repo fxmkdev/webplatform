@@ -20,7 +20,7 @@ import type {
 import { getLabelText } from "../../common/labels.js";
 import { Label } from "./labels.js";
 import { CheckboxInput } from "./translation-checkbox-input.js";
-import styles from "./translations-field-label.module.css";
+import styles from "./translations-select-locales-drawer.module.css";
 
 type SelectLocalesDrawerProps = {
   collectionSlug?: CollectionSlug;

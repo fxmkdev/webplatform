@@ -1,0 +1,19 @@
+.selectLocalesText {
+  margin-top: 2rem;
+}
+
+.selectLocalesList {
+  margin-top: 2rem;
+
+  > div {
+    margin-top: 1rem;
+  }
+}
+
+.selectLocalesNote {
+  margin-top: 2rem;
+}
+
+.selectLocalesFooter {
+  margin-top: 0.25rem;
+}

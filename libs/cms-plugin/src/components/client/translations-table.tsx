@@ -16,7 +16,7 @@ import type { AllLocalesText } from "./translations-field-label-types.js";
 import { cn } from "../../common/cn.js";
 import { SparklesIcon } from "../../common/icons.js";
 import { Label } from "./labels.js";
-import styles from "./translations-field-label.module.css";
+import styles from "./translations-table.module.css";
 
 type TranslationsTableProps = {
   currentLocale: Locale;

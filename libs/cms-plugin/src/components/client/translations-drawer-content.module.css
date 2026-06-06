@@ -1,0 +1,22 @@
+.loadingIndicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  height: calc(100vh - 10rem);
+
+  font-size: 1.5rem;
+  line-height: 1.3333;
+
+  color: var(--theme-elevation-600);
+}
+
+.errorContent {
+  display: grid;
+  gap: 1rem;
+  justify-items: center;
+
+  max-width: 24rem;
+
+  text-align: center;
+}

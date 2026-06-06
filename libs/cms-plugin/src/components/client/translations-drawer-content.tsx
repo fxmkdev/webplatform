@@ -15,7 +15,7 @@ import type {
 } from "../../translations/types.js";
 import type { AllLocalesText } from "./translations-field-label-types.js";
 
-import styles from "./translations-field-label.module.css";
+import styles from "./translations-drawer-content.module.css";
 import { SelectLocalesDrawer } from "./translations-select-locales-drawer.js";
 import { TranslationsTable } from "./translations-table.js";
 
