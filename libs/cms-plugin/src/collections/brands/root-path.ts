@@ -97,11 +97,11 @@ async function validateRootPathValue(
     return t(`cmsPlugin:brands:rootPath:${formatValidationResult}`);
   }
 
-  const overlappingBrand = (
-    await getBrandsWithOverlappingRootPath(options.req, rootPath)
+  const duplicateBrand = (
+    await getBrandsWithDuplicateRootPath(options.req, rootPath)
   ).find((brand) => brand.id !== options.id);
-  if (overlappingBrand) {
-    return t("cmsPlugin:brands:rootPath:overlaps");
+  if (duplicateBrand) {
+    return t("cmsPlugin:brands:rootPath:alreadyExists");
   }
 
   return true;
@@ -145,7 +145,7 @@ export function resolveRootPathForLocale(
     : undefined;
 }
 
-export async function getBrandsWithOverlappingRootPath(
+export async function getBrandsWithDuplicateRootPath(
   req: PayloadRequest,
   rootPath: string,
 ) {
@@ -163,15 +163,61 @@ export async function getBrandsWithOverlappingRootPath(
 
   return result.docs.filter((brand) =>
     getLocalizedRootPaths(brand.rootPath, publishedLocaleIds).some(
-      (existingRootPath) => rootPathsOverlap(existingRootPath, rootPath),
+      (existingRootPath) => rootPathsAreEqual(existingRootPath, rootPath),
     ),
   );
 }
 
-export function rootPathsOverlap(rootPathA: string, rootPathB: string) {
+export function rootPathsAreEqual(rootPathA: string, rootPathB: string) {
   return (
-    pathnameBelongsToRootPath(rootPathA, rootPathB) ||
-    pathnameBelongsToRootPath(rootPathB, rootPathA)
+    normalizePathnameInput(rootPathA) === normalizePathnameInput(rootPathB)
+  );
+}
+
+export async function getMostSpecificBrandForPathname({
+  localeId,
+  pathname,
+  req,
+}: {
+  localeId: string | undefined;
+  pathname: string;
+  req: PayloadRequest;
+}) {
+  if (!localeId) {
+    return undefined;
+  }
+
+  const result = await req.payload.find({
+    collection: "brands",
+    locale: "all",
+    pagination: false,
+    req: createIsolatedLocalRequest(req),
+    select: {
+      rootPath: true,
+    },
+  });
+
+  return result.docs.reduce<{ id: unknown; rootPath: string } | undefined>(
+    (mostSpecificBrand, brand) => {
+      const rootPath = resolveRootPathForLocale(brand.rootPath, localeId);
+
+      if (!rootPath || !pathnameBelongsToRootPath(pathname, rootPath)) {
+        return mostSpecificBrand;
+      }
+
+      if (
+        !mostSpecificBrand ||
+        rootPath.length > mostSpecificBrand.rootPath.length
+      ) {
+        return {
+          id: brand.id,
+          rootPath,
+        };
+      }
+
+      return mostSpecificBrand;
+    },
+    undefined,
   );
 }
 

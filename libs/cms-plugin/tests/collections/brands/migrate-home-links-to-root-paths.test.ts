@@ -78,6 +78,64 @@ describe("migrateBrandHomeLinksToRootPaths", () => {
     });
   });
 
+  it("updates nested brand root paths through Payload validation", async () => {
+    const payload = {
+      find: vi.fn(async () => ({
+        docs: [
+          {
+            homeLink: { doc: "puerta-home" },
+            id: "puerta",
+          },
+          {
+            homeLink: { doc: "aqua-home" },
+            id: "aqua",
+          },
+        ],
+      })),
+      findByID: vi.fn(async ({ id }: { id: string }) => ({
+        id,
+        pathname:
+          id === "puerta-home"
+            ? {
+                en: "/",
+                es: "/",
+              }
+            : {
+                en: "/aqua",
+                es: "/aqua",
+              },
+      })),
+      update: vi.fn(async () => ({})),
+    } as unknown as Payload;
+
+    const result = await migrateBrandHomeLinksToRootPaths({ payload });
+
+    expect(result).toMatchObject({
+      brandsProcessed: 2,
+      brandsSkipped: 0,
+      brandsUpdated: 2,
+    });
+    expect(payload.update).toHaveBeenCalledTimes(4);
+    expect(payload.update).toHaveBeenCalledWith({
+      collection: "brands",
+      data: {
+        rootPath: "/",
+      },
+      id: "puerta",
+      locale: "en",
+      overrideAccess: true,
+    });
+    expect(payload.update).toHaveBeenCalledWith({
+      collection: "brands",
+      data: {
+        rootPath: "/aqua",
+      },
+      id: "aqua",
+      locale: "en",
+      overrideAccess: true,
+    });
+  });
+
   it("skips brands that already have root paths", async () => {
     const payload = {
       find: vi.fn(async () => ({

@@ -3,11 +3,12 @@ import type { PayloadRequest } from "payload";
 import { describe, expect, it } from "vitest";
 
 import {
-  getBrandsWithOverlappingRootPath,
+  getBrandsWithDuplicateRootPath,
+  getMostSpecificBrandForPathname,
   normalizeRootPathValue,
   resolveRootPathForLocale,
   rootPathField,
-  rootPathsOverlap,
+  rootPathsAreEqual,
 } from "../../../src/collections/brands/root-path.js";
 
 function createValidateOptions({
@@ -52,21 +53,21 @@ describe("brand root path helpers", () => {
     expect(field.admin?.components?.Label).toBeUndefined();
   });
 
-  it("detects equal root paths as overlapping", () => {
-    expect(rootPathsOverlap("/brand", "/brand")).toBe(true);
+  it("detects equal root paths as duplicates", () => {
+    expect(rootPathsAreEqual("/brand", "/brand")).toBe(true);
   });
 
-  it("detects parent and child root paths as overlapping", () => {
-    expect(rootPathsOverlap("/brand", "/brand/sub")).toBe(true);
-    expect(rootPathsOverlap("/brand/sub", "/brand")).toBe(true);
+  it("allows parent and child root paths", () => {
+    expect(rootPathsAreEqual("/brand", "/brand/sub")).toBe(false);
+    expect(rootPathsAreEqual("/brand/sub", "/brand")).toBe(false);
   });
 
-  it("treats the site root as overlapping every child path", () => {
-    expect(rootPathsOverlap("/", "/brand")).toBe(true);
+  it("allows the site root with child paths", () => {
+    expect(rootPathsAreEqual("/", "/brand")).toBe(false);
   });
 
-  it("does not treat sibling path prefixes as overlapping", () => {
-    expect(rootPathsOverlap("/brand", "/brandish")).toBe(false);
+  it("does not treat sibling path prefixes as duplicates", () => {
+    expect(rootPathsAreEqual("/brand", "/brandish")).toBe(false);
   });
 
   it("normalizes active-locale root path strings", () => {
@@ -119,6 +120,69 @@ describe("brand root path helpers", () => {
     ).resolves.toBe("cmsPlugin:brands:rootPath:mustStartWithSlash");
   });
 
+  it("rejects exact duplicate root paths from another brand", async () => {
+    await expect(
+      validateRootPath(
+        {
+          en: "/brand",
+          es: "/marca",
+        },
+        createValidateOptions({
+          docs: [
+            {
+              id: "other-brand",
+              rootPath: {
+                en: "/brand",
+              },
+            },
+          ],
+        }),
+      ),
+    ).resolves.toBe("cmsPlugin:brands:rootPath:alreadyExists");
+  });
+
+  it("allows nested root paths from another brand", async () => {
+    await expect(
+      validateRootPath(
+        {
+          en: "/",
+          es: "/",
+        },
+        createValidateOptions({
+          docs: [
+            {
+              id: "aqua",
+              rootPath: {
+                en: "/aqua",
+                es: "/aqua",
+              },
+            },
+          ],
+        }),
+      ),
+    ).resolves.toBe(true);
+
+    await expect(
+      validateRootPath(
+        {
+          en: "/brand/sub",
+          es: "/marca/sub",
+        },
+        createValidateOptions({
+          docs: [
+            {
+              id: "parent-brand",
+              rootPath: {
+                en: "/brand",
+                es: "/marca",
+              },
+            },
+          ],
+        }),
+      ),
+    ).resolves.toBe(true);
+  });
+
   it("rejects malformed localized root path objects", async () => {
     await expect(
       validateRootPath({
@@ -157,7 +221,7 @@ describe("brand root path helpers", () => {
       },
     } as unknown as PayloadRequest;
 
-    await getBrandsWithOverlappingRootPath(req, "/new");
+    await getBrandsWithDuplicateRootPath(req, "/new");
 
     expect(localAPIReq).toBeDefined();
     if (!localAPIReq) {
@@ -168,5 +232,67 @@ describe("brand root path helpers", () => {
     expect(Object.getPrototypeOf(localAPIReq)).toBe(req);
     expect(localAPIReq.locale).toBe("all");
     expect(req.locale).toBe("en");
+  });
+
+  it("finds the most specific brand for a nested pathname", async () => {
+    const req = {
+      payload: {
+        find: async () => ({
+          docs: [
+            {
+              id: "root",
+              rootPath: {
+                en: "/",
+              },
+            },
+            {
+              id: "aqua",
+              rootPath: {
+                en: "/aqua",
+              },
+            },
+            {
+              id: "azul",
+              rootPath: {
+                en: "/azul",
+              },
+            },
+          ],
+        }),
+      },
+    } as unknown as PayloadRequest;
+
+    await expect(
+      getMostSpecificBrandForPathname({
+        localeId: "en",
+        pathname: "/aqua/page",
+        req,
+      }),
+    ).resolves.toEqual({
+      id: "aqua",
+      rootPath: "/aqua",
+    });
+
+    await expect(
+      getMostSpecificBrandForPathname({
+        localeId: "en",
+        pathname: "/azul",
+        req,
+      }),
+    ).resolves.toEqual({
+      id: "azul",
+      rootPath: "/azul",
+    });
+
+    await expect(
+      getMostSpecificBrandForPathname({
+        localeId: "en",
+        pathname: "/aquaish",
+        req,
+      }),
+    ).resolves.toEqual({
+      id: "root",
+      rootPath: "/",
+    });
   });
 });
