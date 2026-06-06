@@ -33,6 +33,53 @@ await migrateBrandHomeLinksToRootPaths({
 Review the returned skipped and missing counts before removing any legacy
 assumptions in your application.
 
+## Brand Theme Color Model
+
+Brands expose an explicit `themeColor` field so editors can choose a visual
+theme independently from the brand identity. Configure the available theme
+tokens in `cmsPlugin`; the first option is used as the default for newly created
+brands.
+
+```ts
+cmsPlugin({
+  themeColors: [
+    { label: "Puerta", value: "puerta" },
+    { label: "Aqua", value: "aqua" },
+    { label: "Azul", value: "azul" },
+  ],
+  mediaS3Storage: {
+    accessKeyId: process.env.MEDIA_S3_ACCESS_KEY_ID || "",
+    bucket: process.env.MEDIA_S3_BUCKET || "",
+    region: process.env.MEDIA_S3_REGION || "",
+    secretAccessKey: process.env.MEDIA_S3_SECRET_ACCESS_KEY || "",
+  },
+});
+```
+
+Existing brand documents created before `themeColor` existed need to be
+backfilled before frontends switch from brand-id-based theme lookup to
+`brand.themeColor`. Run a Payload migration that maps existing brand IDs to the
+desired theme token.
+
+```ts
+import { migrateBrandThemeColors } from "@fxmk/cms-plugin";
+
+await migrateBrandThemeColors({
+  payload,
+  req,
+  defaultThemeColor: "puerta",
+  themeColorByBrandId: {
+    puerta: "puerta",
+    aqua: "aqua",
+    azul: "azul",
+  },
+});
+```
+
+Review `brandsUsingDefaultThemeColor` in the returned result. A non-zero value
+can be expected for intentional default-brand fallbacks, but it is also a useful
+signal that a newly discovered brand ID was not included in the mapping.
+
 Payload is built with a robust infrastructure intended to support Plugins with
 ease. This provides a simple, modular, and reusable way for developers to extend
 the core capabilities of Payload.
