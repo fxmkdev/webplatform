@@ -133,6 +133,9 @@ export function SelectLocalesDrawer({
                     targetLocaleCodes: selectedLocaleCodes,
                   }),
                   credentials: "include",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
                   method: "POST",
                 },
               );

@@ -2,7 +2,7 @@
 
 import type { CollectionSlug, GlobalSlug, Locale } from "payload";
 
-import { useModal, useTranslation } from "@payloadcms/ui";
+import { Button, useModal, useTranslation } from "@payloadcms/ui";
 import {
   formatDrawerSlug,
   useDrawerDepth,
@@ -38,11 +38,12 @@ export function DrawerContent({
   locales,
   onClose,
 }: DrawerContentProps) {
-  const [data, setData] = useState<AllLocalesText | null>(null);
+  const [data, setData] = useState<AllLocalesText | null | undefined>();
   const [isTranslating, setIsTranslating] = useState(false);
 
   const updateData = useCallback(
     async function updateData() {
+      setData(undefined);
       const searchParams = new URLSearchParams();
       if (collectionSlug) {
         searchParams.set("collection", collectionSlug);
@@ -54,16 +55,20 @@ export function DrawerContent({
         searchParams.set("id", id);
       }
       searchParams.set("fieldPath", fieldPath);
-      const result = await fetch(
-        `/api/translations?${searchParams.toString()}`,
-        {
-          credentials: "include",
-        },
-      );
+      try {
+        const result = await fetch(
+          `/api/translations?${searchParams.toString()}`,
+          {
+            credentials: "include",
+          },
+        );
 
-      if (result.ok) {
-        setData(await result.json());
-      } else {
+        if (result.ok) {
+          setData(await result.json());
+        } else {
+          setData(null);
+        }
+      } catch {
         setData(null);
       }
     },
@@ -80,10 +85,23 @@ export function DrawerContent({
     })();
   }, [updateData]);
 
-  if (!data) {
+  if (data === undefined) {
     return (
       <div className={styles.loadingIndicator}>
         {t("cmsPlugin:common:loading")}
+      </div>
+    );
+  }
+
+  if (data === null) {
+    return (
+      <div className={styles.loadingIndicator}>
+        <div className={styles.errorContent}>
+          <p>{t("cmsPlugin:translations:failedToLoadTranslations")}</p>
+          <Button onClick={() => void updateData()} size="medium">
+            {t("cmsPlugin:translations:retryLoadingTranslations")}
+          </Button>
+        </div>
       </div>
     );
   }
