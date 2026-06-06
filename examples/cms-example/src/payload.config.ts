@@ -32,6 +32,11 @@ export default buildConfig({
       media: {
         organization: "folders",
       },
+      themeColors: [
+        { label: "Default", value: "default" },
+        { label: "Aqua", value: "aqua" },
+        { label: "Azul", value: "azul" },
+      ],
       serverUrl,
       mediaS3Storage: {
         bucket: process.env.MEDIA_S3_BUCKET || "",

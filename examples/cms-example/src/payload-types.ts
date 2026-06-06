@@ -1050,7 +1050,7 @@ export interface Page {
     image?: (string | null) | Media;
   };
   /**
-   * Choose the brand to which the page belongs. The brand determines the theme of the page.
+   * Choose the brand to which the page belongs. The page pathname must live within the brand's root path.
    */
   brand: string | Brand;
   /**
@@ -1581,6 +1581,10 @@ export interface Brand {
    * The localized root path for this brand. Pages for this brand must use this path or a child path below it.
    */
   rootPath: string;
+  /**
+   * Choose the theme color used by the frontend for this brand.
+   */
+  themeColor: 'default' | 'aqua' | 'azul';
   /**
    * The base title is appended to the titles of the brand’s pages. If the page does not have a title, the base title will be used as the title. Include important keywords in the title for SEO.
    */
@@ -2198,6 +2202,7 @@ export interface BrandsSelect<T extends boolean = true> {
   name?: T;
   homeLink?: T | NewLinkSelect<T>;
   rootPath?: T;
+  themeColor?: T;
   baseTitle?: T;
   logo?: T;
   banner?: T;

@@ -165,8 +165,8 @@ export function Pages({
         },
         admin: {
           description: {
-            en: "Choose the brand to which the page belongs. The brand determines the theme of the page.",
-            es: "Elige la marca a la que pertenece la página. La marca determina el tema de la página.",
+            en: "Choose the brand to which the page belongs. The page pathname must live within the brand's root path.",
+            es: "Elige la marca a la que pertenece la página. La ruta de la página debe estar dentro de la ruta raíz de la marca.",
           },
           position: "sidebar",
         },
