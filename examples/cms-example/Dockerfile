@@ -28,11 +28,17 @@ COPY --link libs/common libs/common
 
 RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
       pnpm --filter cms-example --filter cms-plugin --filter common install --frozen-lockfile --offline
-RUN pnpm --filter cms-example exec pnpm version "$APP_VERSION" --git-tag-version false
 RUN pnpm --filter common build
 RUN pnpm --filter cms-plugin build
 RUN --mount=type=cache,id=next-cache,target=/app/examples/cms-example/.next/cache \
       pnpm --filter cms-example build
+RUN node -e ' \
+      const fs = require("node:fs"); \
+      const packagePath = "examples/cms-example/.next/standalone/examples/cms-example/package.json"; \
+      const packageJson = JSON.parse(fs.readFileSync(packagePath, "utf8")); \
+      packageJson.version = process.env.APP_VERSION; \
+      fs.writeFileSync(packagePath, `${JSON.stringify(packageJson, null, 2)}\n`); \
+    '
 RUN mkdir -p examples/cms-example/public
 
 FROM base AS runner
