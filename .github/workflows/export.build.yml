@@ -363,7 +363,7 @@ jobs:
         run: pnpm --workspace-root install
       - name: Create release
         run: |
-          pnpm releaser publish --draft ${{ needs.version.outputs.version }}
+          pnpm releaser publish ${{ needs.version.outputs.version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
