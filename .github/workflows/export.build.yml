@@ -348,7 +348,9 @@ jobs:
   create-release:
     name: Create release
     runs-on: ubuntu-latest
-    if: needs.version.outputs.is_new_release == 'true'
+    if: >
+      github.event_name != 'pull_request' && github.ref == 'refs/heads/main' &&
+      needs.version.outputs.is_new_release == 'true'
     needs: [deploy, version]
     permissions:
       contents: write
