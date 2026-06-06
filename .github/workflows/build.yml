@@ -252,7 +252,9 @@ jobs:
       - common-build
       - cms-example-build-push
       - version
-    if: needs.version.outputs.is_new_release == 'true'
+    if: >
+      github.event_name != 'pull_request' && github.ref == 'refs/heads/main' &&
+      needs.version.outputs.is_new_release == 'true'
     permissions:
       contents: write
     steps:
@@ -266,7 +268,7 @@ jobs:
         run: pnpm --workspace-root install
       - name: Create release
         run: |
-          pnpm releaser publish --draft ${{ needs.version.outputs.version }}
+          pnpm releaser publish ${{ needs.version.outputs.version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
