@@ -200,6 +200,10 @@ function AllLocalesTextRenderer({
   }
 
   const text = data.value[localeCode];
+  if (text == null) {
+    return null;
+  }
+
   return (
     <>
       {typeof text === "string" ? (
@@ -225,6 +229,9 @@ function isLongContent(data: AllLocalesText, localeCode: string) {
   }
 
   const text = data.value[localeCode];
+  if (text == null) {
+    return false;
+  }
 
   const plainText =
     typeof text === "string"

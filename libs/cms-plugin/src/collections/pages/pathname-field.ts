@@ -73,8 +73,10 @@ export function pagePathnameFields(): Field[] {
 const createRedirectForPreviousPathname: FieldHook = async ({
   operation,
   previousDoc,
+  previousValue,
   req,
   siblingData,
+  value,
 }) => {
   if (operation !== "update") {
     return;
@@ -85,26 +87,32 @@ const createRedirectForPreviousPathname: FieldHook = async ({
   if (!siblingData["pathname_createRedirect"]) {
     return;
   }
+  if (typeof previousValue !== "string" || typeof value !== "string") {
+    return;
+  }
+  if (previousValue === value) {
+    return;
+  }
 
   const redirects = await req.payload.find({
     collection: "redirects",
     pagination: false,
     where: {
-      fromPathname: { equals: previousDoc.pathname },
+      fromPathname: { equals: previousValue },
     },
   });
 
   if (redirects.totalDocs > 0) {
     // Redirect already exists, so we don't need to create it again.
-    console.log(`Redirect already exists for ${previousDoc.pathname}`);
+    console.log(`Redirect already exists for ${previousValue}`);
     return;
   }
 
-  console.log(`Creating redirect for ${previousDoc.pathname}`);
+  console.log(`Creating redirect for ${previousValue}`);
   await req.payload.create({
     collection: "redirects",
     data: {
-      fromPathname: previousDoc.pathname,
+      fromPathname: previousValue,
       to: { page: previousDoc.id },
     },
   });
