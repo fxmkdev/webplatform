@@ -245,9 +245,11 @@ export const en = {
         "This will translate the {{ sourceLocale }} text to the other locales and overwrite the other translations.\n\nDo you want to proceed?",
       currentLocale: "Current Locale",
       failedToAutoTranslate: "Failed to auto-translate",
+      failedToLoadTranslations: "Failed to load translations.",
       goToTranslation: "Go to Translation",
       pleaseSaveYourChangesToEnableAutoTranslate:
         "Please save your changes to enable translation.",
+      retryLoadingTranslations: "Retry",
       selectLocales: "Select Locales",
       selectLocalesDescription:
         "Please confirm the target locales below. The text will be translated from the current locale {{ sourceLocale }} into the selected locales. The translation is powered by the machine translation service <a>DeepL</a>.",

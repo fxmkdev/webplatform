@@ -247,9 +247,11 @@ export const es: TranslationsObject = {
         "Esto traducirá el texto de {{ sourceLocale }} a los otros idiomas y sobrescribirá las otras traducciones.\n\n¿Desea continuar?",
       currentLocale: "Idioma actual",
       failedToAutoTranslate: "Error al auto-traducir",
+      failedToLoadTranslations: "Error al cargar las traducciones.",
       goToTranslation: "Ir a la traducción",
       pleaseSaveYourChangesToEnableAutoTranslate:
         "Por favor, guarde sus cambios para habilitar la traducción.",
+      retryLoadingTranslations: "Reintentar",
       selectLocales: "Seleccionar idiomas",
       selectLocalesDescription:
         "Confirme los idiomas de destino a continuación. El texto se traducirá del idioma actual {{ sourceLocale }} a los idiomas seleccionados. La traducción es proporcionada por el servicio de traducción automática <a>DeepL</a>.",
