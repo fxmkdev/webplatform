@@ -94,6 +94,11 @@ const createRedirectForPreviousPathname: FieldHook = async ({
     return;
   }
 
+  const previousPageId = previousDoc.id as string | undefined;
+  if (!previousPageId) {
+    return;
+  }
+
   const redirects = await req.payload.find({
     collection: "redirects",
     pagination: false,
@@ -113,7 +118,7 @@ const createRedirectForPreviousPathname: FieldHook = async ({
     collection: "redirects",
     data: {
       fromPathname: previousValue,
-      to: { page: previousDoc.id },
+      to: { page: previousPageId },
     },
   });
 };
