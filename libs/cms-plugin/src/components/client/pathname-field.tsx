@@ -7,6 +7,7 @@ import {
   FieldDescription,
   FieldLabel,
   TextInput,
+  useDocumentInfo,
   useField,
   useForm,
   useFormFields,
@@ -24,6 +25,7 @@ export function PathnameField({ field, path }: TextFieldClientProps) {
   const { initialValue, setValue, showError, value } = useField<string>({
     path,
   });
+  const { id } = useDocumentInfo();
 
   const { dispatchFields } = useForm();
   const [isLocked, createRedirect] = useFormFields(([fields]) => {
@@ -35,7 +37,11 @@ export function PathnameField({ field, path }: TextFieldClientProps) {
 
   const { t } = useTranslation<TranslationsObject, TranslationsKey>();
 
-  const isChanged = initialValue !== value;
+  const hasExistingPage = Boolean(id);
+  const hasInitialPathname =
+    typeof initialValue === "string" && initialValue.length > 0;
+  const shouldShowCreateRedirect =
+    hasExistingPage && hasInitialPathname && initialValue !== value;
 
   return (
     <div className="field-type">
@@ -47,21 +53,23 @@ export function PathnameField({ field, path }: TextFieldClientProps) {
           required={field.required}
         />
 
-        <button
-          className={styles.lockButton}
-          onClick={() =>
-            dispatchFields({
-              type: "UPDATE",
-              path: "pathname_locked",
-              value: !isLocked,
-            })
-          }
-          type="button"
-        >
-          {isLocked
-            ? t("cmsPlugin:pages:pathname:unlock")
-            : t("cmsPlugin:pages:pathname:lock")}
-        </button>
+        {hasExistingPage && (
+          <button
+            className={styles.lockButton}
+            onClick={() =>
+              dispatchFields({
+                type: "UPDATE",
+                path: "pathname_locked",
+                value: !isLocked,
+              })
+            }
+            type="button"
+          >
+            {isLocked
+              ? t("cmsPlugin:pages:pathname:unlock")
+              : t("cmsPlugin:pages:pathname:lock")}
+          </button>
+        )}
       </div>
 
       <TextInput
@@ -69,12 +77,12 @@ export function PathnameField({ field, path }: TextFieldClientProps) {
         onChange={setValue}
         path={path}
         placeholder={field.admin?.placeholder}
-        readOnly={isLocked}
+        readOnly={hasExistingPage && isLocked}
         required={field.required}
         showError={showError}
         value={value}
       />
-      {isChanged && (
+      {shouldShowCreateRedirect && (
         <CheckboxInput
           checked={createRedirect}
           className={styles.createRedirectCheckbox}
