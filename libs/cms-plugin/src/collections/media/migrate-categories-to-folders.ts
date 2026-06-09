@@ -85,6 +85,15 @@ const RETRYABLE_ERROR_LABELS = new Set([
   "UnknownTransactionCommitResult",
 ]);
 
+function finiteNumberOrDefault(
+  value: number | undefined,
+  defaultValue: number,
+) {
+  return typeof value === "number" && Number.isFinite(value)
+    ? value
+    : defaultValue;
+}
+
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return Boolean(value && typeof value === "object" && !Array.isArray(value));
 }
@@ -99,19 +108,30 @@ function normalizeRetryOptions(
   return {
     attempts: Math.max(
       1,
-      Math.floor(retry?.attempts ?? DEFAULT_RETRY_OPTIONS.attempts),
+      Math.floor(
+        finiteNumberOrDefault(retry?.attempts, DEFAULT_RETRY_OPTIONS.attempts),
+      ),
     ),
     backoffFactor: Math.max(
       1,
-      retry?.backoffFactor ?? DEFAULT_RETRY_OPTIONS.backoffFactor,
+      finiteNumberOrDefault(
+        retry?.backoffFactor,
+        DEFAULT_RETRY_OPTIONS.backoffFactor,
+      ),
     ),
     initialDelayMs: Math.max(
       0,
-      retry?.initialDelayMs ?? DEFAULT_RETRY_OPTIONS.initialDelayMs,
+      finiteNumberOrDefault(
+        retry?.initialDelayMs,
+        DEFAULT_RETRY_OPTIONS.initialDelayMs,
+      ),
     ),
     maxDelayMs: Math.max(
       0,
-      retry?.maxDelayMs ?? DEFAULT_RETRY_OPTIONS.maxDelayMs,
+      finiteNumberOrDefault(
+        retry?.maxDelayMs,
+        DEFAULT_RETRY_OPTIONS.maxDelayMs,
+      ),
     ),
   };
 }

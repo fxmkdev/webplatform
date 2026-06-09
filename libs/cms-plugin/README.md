@@ -136,10 +136,10 @@ By default the migration helper creates or reuses top-level folders. Pass
 `parentFolderID` if migrated category folders should live under a specific
 existing folder.
 
-The helper retries retryable MongoDB transaction/catalog-change errors by
-default, including `TransientTransactionError` and `WriteConflict`. This makes
-first deploys less flaky when Payload introduces the `payload-folders`
-collection and the migration immediately writes folders.
+The helper automatically retries transient MongoDB transaction/catalog-change
+errors by default, including `TransientTransactionError` and `WriteConflict`.
+This makes first deploys less flaky when Payload introduces the
+`payload-folders` collection and the migration immediately writes folders.
 
 Because Payload runs migrations in a transaction when `req` is passed, the
 helper defaults to `disableTransaction: true` for its Local API calls and relies

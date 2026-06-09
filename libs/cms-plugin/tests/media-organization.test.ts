@@ -468,6 +468,43 @@ describe("migrateMediaCategoriesToFolders", () => {
     expect(payload.create).toHaveBeenCalledOnce();
   });
 
+  it("falls back to default retry options for non-finite values", async () => {
+    const payload = {
+      create: vi
+        .fn()
+        .mockRejectedValueOnce(transientTransactionError())
+        .mockResolvedValueOnce({ id: "folder-1" }),
+      find: vi.fn(async (options) => {
+        if (options.collection === "mediaCategory") {
+          return { docs: [{ id: "category-1", name: "Rooms" }] };
+        }
+
+        if (options.collection === "payload-folders") {
+          return { docs: [] };
+        }
+
+        return { docs: [{ id: "media-1" }] };
+      }),
+      update: vi.fn(async () => ({})),
+    } as unknown as Payload;
+
+    const result = await migrateMediaCategoriesToFolders({
+      payload,
+      retry: {
+        attempts: Number.NaN,
+        backoffFactor: Number.NaN,
+        initialDelayMs: 0,
+        maxDelayMs: Number.NaN,
+      },
+    });
+
+    expect(result).toMatchObject({
+      foldersCreated: 1,
+      mediaUpdated: 1,
+    });
+    expect(payload.create).toHaveBeenCalledTimes(2);
+  });
+
   it("can disable retries", async () => {
     const payload = {
       create: vi.fn(async () => {
