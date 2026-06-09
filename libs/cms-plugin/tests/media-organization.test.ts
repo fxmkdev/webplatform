@@ -41,6 +41,26 @@ describe("media organization config", () => {
     expect(media.folders).toBe(true);
   });
 
+  it("populates upload thumbnail fields for folder media cards", () => {
+    const media = Media({ organization: "folders" });
+
+    expect(media.defaultPopulate).toMatchObject({
+      sizes: {
+        thumbnail: {
+          filename: true,
+          height: true,
+          url: true,
+          width: true,
+        },
+      },
+      thumbnailURL: true,
+      url: true,
+    });
+    expect(media.upload).toMatchObject({
+      adminThumbnail: "thumbnail",
+    });
+  });
+
   it("can retain a hidden category field during folder migration", () => {
     const media = Media({
       organization: "folders",
