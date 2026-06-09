@@ -71,6 +71,18 @@ type CategoryMigrationResult = Pick<
   "foldersCreated" | "foldersReused" | "mediaSkipped" | "mediaUpdated"
 >;
 
+type MediaAssignmentResult = Pick<
+  MigrateMediaCategoriesToFoldersResult,
+  "mediaSkipped" | "mediaUpdated"
+>;
+
+type FolderResolutionResult = {
+  folderID: ID;
+} & Pick<
+  MigrateMediaCategoriesToFoldersResult,
+  "foldersCreated" | "foldersReused"
+>;
+
 type RetryOptions = Required<MigrateMediaCategoriesToFoldersRetryOptions>;
 
 const DEFAULT_RETRY_OPTIONS: RetryOptions = {
@@ -408,6 +420,111 @@ async function findReusableFolder({
   );
 }
 
+async function assignMediaToFolder({
+  dryRun,
+  folderFieldName,
+  folderID,
+  media,
+  mediaCollectionSlug,
+  requestOptions,
+  update,
+}: {
+  dryRun: boolean;
+  folderFieldName: string;
+  folderID: ID;
+  media: MediaWithLegacyCategory[];
+  mediaCollectionSlug: string;
+  requestOptions: RequestOptions;
+  update: PayloadUpdate;
+}): Promise<MediaAssignmentResult> {
+  const result: MediaAssignmentResult = {
+    mediaSkipped: 0,
+    mediaUpdated: 0,
+  };
+
+  for (const mediaItem of media) {
+    if (relationshipID(mediaItem[folderFieldName])) {
+      result.mediaSkipped += 1;
+      continue;
+    }
+
+    result.mediaUpdated += 1;
+
+    if (!dryRun) {
+      await update({
+        id: mediaItem.id,
+        collection: mediaCollectionSlug,
+        data: {
+          [folderFieldName]: folderID,
+        },
+        ...requestOptions,
+      });
+    }
+  }
+
+  return result;
+}
+
+async function folderForCategory({
+  category,
+  categoryNameCounts,
+  create,
+  dryRun,
+  find,
+  folderCollectionSlug,
+  folderFieldName,
+  folderType,
+  parentFolderID,
+  requestOptions,
+}: {
+  category: LegacyMediaCategory;
+  categoryNameCounts: Map<string, number>;
+  create: PayloadCreate;
+  dryRun: boolean;
+  find: PayloadFind;
+  folderCollectionSlug: string;
+  folderFieldName: string;
+  folderType: false | string;
+  parentFolderID?: ID;
+  requestOptions: RequestOptions;
+}): Promise<FolderResolutionResult> {
+  const folderName = folderNameForCategory(category, categoryNameCounts);
+  const parentFolder = parentFolderID ?? null;
+  const folder = await findReusableFolder({
+    find,
+    folderCollectionSlug,
+    folderFieldName,
+    folderName,
+    folderType,
+    parentFolder,
+    requestOptions,
+  });
+
+  const folderID =
+    folder?.id ??
+    (dryRun
+      ? `dry-run:${category.id}`
+      : await createFolder({
+          create,
+          folderCollectionSlug,
+          folderFieldName,
+          folderName,
+          folderType,
+          parentFolder,
+          requestOptions,
+        }));
+
+  if (!folderID) {
+    throw new Error(`Failed to create folder for category "${category.name}"`);
+  }
+
+  return {
+    folderID,
+    foldersCreated: folder ? 0 : 1,
+    foldersReused: folder ? 1 : 0,
+  };
+}
+
 async function migrateCategoryToFolder({
   category,
   categoryNameCounts,
@@ -442,41 +559,20 @@ async function migrateCategoryToFolder({
     mediaUpdated: 0,
   };
 
-  const folderName = folderNameForCategory(category, categoryNameCounts);
-  const parentFolder = parentFolderID ?? null;
-  const folder = await findReusableFolder({
+  const folderResult = await folderForCategory({
+    category,
+    categoryNameCounts,
+    create,
+    dryRun,
     find,
     folderCollectionSlug,
     folderFieldName,
-    folderName,
     folderType,
-    parentFolder,
+    parentFolderID,
     requestOptions,
   });
-
-  const folderID =
-    folder?.id ??
-    (dryRun
-      ? `dry-run:${category.id}`
-      : await createFolder({
-          create,
-          folderCollectionSlug,
-          folderFieldName,
-          folderName,
-          folderType,
-          parentFolder,
-          requestOptions,
-        }));
-
-  if (!folderID) {
-    throw new Error(`Failed to create folder for category "${category.name}"`);
-  }
-
-  if (folder) {
-    result.foldersReused += 1;
-  } else {
-    result.foldersCreated += 1;
-  }
+  result.foldersCreated += folderResult.foldersCreated;
+  result.foldersReused += folderResult.foldersReused;
 
   const media = await findMediaForCategory({
     categoryID: category.id,
@@ -485,25 +581,17 @@ async function migrateCategoryToFolder({
     requestOptions,
   });
 
-  for (const mediaItem of media) {
-    if (relationshipID(mediaItem[folderFieldName])) {
-      result.mediaSkipped += 1;
-      continue;
-    }
-
-    result.mediaUpdated += 1;
-
-    if (!dryRun) {
-      await update({
-        id: mediaItem.id,
-        collection: mediaCollectionSlug,
-        data: {
-          [folderFieldName]: folderID,
-        },
-        ...requestOptions,
-      });
-    }
-  }
+  const mediaAssignmentResult = await assignMediaToFolder({
+    dryRun,
+    folderFieldName,
+    folderID: folderResult.folderID,
+    media,
+    mediaCollectionSlug,
+    requestOptions,
+    update,
+  });
+  result.mediaSkipped += mediaAssignmentResult.mediaSkipped;
+  result.mediaUpdated += mediaAssignmentResult.mediaUpdated;
 
   return result;
 }
