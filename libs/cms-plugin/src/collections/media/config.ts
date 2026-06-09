@@ -96,6 +96,16 @@ export function Media({
       filename: true,
       height: true,
       mimeType: true,
+      sizes: {
+        thumbnail: {
+          filename: true,
+          height: true,
+          url: true,
+          width: true,
+        },
+      },
+      thumbnailURL: true,
+      url: true,
       width: true,
     },
     defaultSort: "filename",
@@ -109,6 +119,7 @@ export function Media({
       singular: translated("cmsPlugin:media:labels:singular"),
     },
     upload: {
+      adminThumbnail: "thumbnail",
       crop: false,
       disableLocalStorage: true,
       displayPreview: true,
