@@ -42,7 +42,7 @@ describe("media organization config", () => {
   });
 
   it("populates upload thumbnail fields for folder media cards", () => {
-    const media = Media();
+    const media = Media({ organization: "folders" });
 
     expect(media.defaultPopulate).toMatchObject({
       sizes: {
