@@ -125,6 +125,18 @@ describe("media organization config", () => {
 });
 
 describe("migrateMediaCategoriesToFolders", () => {
+  const retryWithoutDelay = {
+    initialDelayMs: 0,
+  };
+
+  function transientTransactionError() {
+    return Object.assign(new Error("Unable to write due to catalog changes"), {
+      code: 112,
+      codeName: "WriteConflict",
+      errorLabels: ["TransientTransactionError"],
+    });
+  }
+
   it("creates folders and assigns media that do not already have a folder", async () => {
     const payload = {
       create: vi.fn(async () => ({ id: "folder-1" })),
@@ -163,10 +175,12 @@ describe("migrateMediaCategoriesToFolders", () => {
         folderType: ["media"],
         name: "Rooms",
       },
+      disableTransaction: true,
     });
     expect(payload.update).toHaveBeenCalledWith({
       collection: "media",
       data: { folder: "folder-1" },
+      disableTransaction: true,
       id: "media-1",
     });
   });
@@ -239,6 +253,7 @@ describe("migrateMediaCategoriesToFolders", () => {
     expect(payload.update).toHaveBeenCalledWith({
       collection: "media",
       data: { folder: "folder-1" },
+      disableTransaction: true,
       id: "media-1",
     });
   });
@@ -282,10 +297,12 @@ describe("migrateMediaCategoriesToFolders", () => {
         folderType: ["media"],
         name: "Rooms",
       },
+      disableTransaction: true,
     });
     expect(payload.update).toHaveBeenCalledWith({
       collection: "media",
       data: { folder: "top-level-folder" },
+      disableTransaction: true,
       id: "media-1",
     });
   });
@@ -325,6 +342,247 @@ describe("migrateMediaCategoriesToFolders", () => {
     expect(payload.update).toHaveBeenCalledWith({
       collection: "media",
       data: { folder: "nested-folder" },
+      disableTransaction: true,
+      id: "media-1",
+    });
+  });
+
+  it("retries folder creation after transient Mongo transaction errors", async () => {
+    const payload = {
+      create: vi
+        .fn()
+        .mockRejectedValueOnce(transientTransactionError())
+        .mockResolvedValueOnce({ id: "folder-1" }),
+      find: vi.fn(async (options) => {
+        if (options.collection === "mediaCategory") {
+          return { docs: [{ id: "category-1", name: "Rooms" }] };
+        }
+
+        if (options.collection === "payload-folders") {
+          return { docs: [] };
+        }
+
+        return { docs: [{ id: "media-1" }] };
+      }),
+      update: vi.fn(async () => ({})),
+    } as unknown as Payload;
+
+    const result = await migrateMediaCategoriesToFolders({
+      payload,
+      retry: retryWithoutDelay,
+    });
+
+    expect(result).toMatchObject({
+      categoriesProcessed: 1,
+      foldersCreated: 1,
+      mediaUpdated: 1,
+    });
+    expect(payload.create).toHaveBeenCalledTimes(2);
+    expect(payload.find).toHaveBeenCalledWith({
+      collection: "payload-folders",
+      depth: 0,
+      disableTransaction: true,
+      limit: 100,
+      where: {
+        name: {
+          equals: "Rooms",
+        },
+        or: [
+          {
+            folder: {
+              exists: false,
+            },
+          },
+          {
+            folder: {
+              equals: null,
+            },
+          },
+        ],
+      },
+    });
+  });
+
+  it("retries media updates without double-counting partial attempts", async () => {
+    let folderFinds = 0;
+    let mediaFinds = 0;
+    const payload = {
+      create: vi.fn(async () => ({ id: "folder-1" })),
+      find: vi.fn(async (options) => {
+        if (options.collection === "mediaCategory") {
+          return { docs: [{ id: "category-1", name: "Rooms" }] };
+        }
+
+        if (options.collection === "payload-folders") {
+          folderFinds += 1;
+
+          return {
+            docs:
+              folderFinds === 1
+                ? []
+                : [
+                    {
+                      folderType: ["media"],
+                      id: "folder-1",
+                      name: "Rooms",
+                    },
+                  ],
+          };
+        }
+
+        mediaFinds += 1;
+
+        return {
+          docs:
+            mediaFinds === 1
+              ? [{ id: "media-1" }, { id: "media-2" }]
+              : [{ folder: "folder-1", id: "media-1" }, { id: "media-2" }],
+        };
+      }),
+      update: vi
+        .fn()
+        .mockResolvedValueOnce({})
+        .mockRejectedValueOnce(transientTransactionError())
+        .mockResolvedValueOnce({}),
+    } as unknown as Payload;
+
+    const result = await migrateMediaCategoriesToFolders({
+      payload,
+      retry: retryWithoutDelay,
+    });
+
+    expect(result).toEqual({
+      categoriesProcessed: 1,
+      dryRun: false,
+      foldersCreated: 0,
+      foldersReused: 1,
+      mediaSkipped: 1,
+      mediaUpdated: 1,
+    });
+    expect(payload.create).toHaveBeenCalledOnce();
+    expect(payload.update).toHaveBeenCalledTimes(3);
+  });
+
+  it("does not retry non-retryable errors", async () => {
+    const error = new Error("Validation failed");
+    const payload = {
+      create: vi.fn(async () => {
+        throw error;
+      }),
+      find: vi.fn(async (options) => {
+        if (options.collection === "mediaCategory") {
+          return { docs: [{ id: "category-1", name: "Rooms" }] };
+        }
+
+        return { docs: [] };
+      }),
+      update: vi.fn(),
+    } as unknown as Payload;
+
+    await expect(
+      migrateMediaCategoriesToFolders({
+        payload,
+        retry: retryWithoutDelay,
+      }),
+    ).rejects.toThrow(error);
+    expect(payload.create).toHaveBeenCalledOnce();
+  });
+
+  it("falls back to default retry options for non-finite values", async () => {
+    const payload = {
+      create: vi
+        .fn()
+        .mockRejectedValueOnce(transientTransactionError())
+        .mockResolvedValueOnce({ id: "folder-1" }),
+      find: vi.fn(async (options) => {
+        if (options.collection === "mediaCategory") {
+          return { docs: [{ id: "category-1", name: "Rooms" }] };
+        }
+
+        if (options.collection === "payload-folders") {
+          return { docs: [] };
+        }
+
+        return { docs: [{ id: "media-1" }] };
+      }),
+      update: vi.fn(async () => ({})),
+    } as unknown as Payload;
+
+    const result = await migrateMediaCategoriesToFolders({
+      payload,
+      retry: {
+        attempts: Number.NaN,
+        backoffFactor: Number.NaN,
+        initialDelayMs: 0,
+        maxDelayMs: Number.NaN,
+      },
+    });
+
+    expect(result).toMatchObject({
+      foldersCreated: 1,
+      mediaUpdated: 1,
+    });
+    expect(payload.create).toHaveBeenCalledTimes(2);
+  });
+
+  it("can disable retries", async () => {
+    const payload = {
+      create: vi.fn(async () => {
+        throw transientTransactionError();
+      }),
+      find: vi.fn(async (options) => {
+        if (options.collection === "mediaCategory") {
+          return { docs: [{ id: "category-1", name: "Rooms" }] };
+        }
+
+        return { docs: [] };
+      }),
+      update: vi.fn(),
+    } as unknown as Payload;
+
+    await expect(
+      migrateMediaCategoriesToFolders({
+        payload,
+        retry: false,
+      }),
+    ).rejects.toThrow(/catalog changes/);
+    expect(payload.create).toHaveBeenCalledOnce();
+  });
+
+  it("can preserve Payload migration transaction calls", async () => {
+    const payload = {
+      create: vi.fn(async () => ({ id: "folder-1" })),
+      find: vi.fn(async (options) => {
+        if (options.collection === "mediaCategory") {
+          return { docs: [{ id: "category-1", name: "Rooms" }] };
+        }
+
+        if (options.collection === "payload-folders") {
+          return { docs: [] };
+        }
+
+        return { docs: [{ id: "media-1" }] };
+      }),
+      update: vi.fn(async () => ({})),
+    } as unknown as Payload;
+
+    await migrateMediaCategoriesToFolders({
+      disableTransaction: false,
+      payload,
+    });
+
+    expect(payload.create).toHaveBeenCalledWith({
+      collection: "payload-folders",
+      data: {
+        folderType: ["media"],
+        name: "Rooms",
+      },
+      disableTransaction: false,
+    });
+    expect(payload.update).toHaveBeenCalledWith({
+      collection: "media",
+      data: { folder: "folder-1" },
+      disableTransaction: false,
       id: "media-1",
     });
   });
