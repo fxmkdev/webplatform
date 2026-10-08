@@ -2,6 +2,16 @@
 
 A template repo to create a [Payload CMS](https://payloadcms.com) plugin.
 
+## Dependency Requirements
+
+Use Next.js `>=16.3.8 <17.0.0` and Payload CMS `^3.90.2`, with matching
+`@payloadcms/*` package versions. These minimum versions include security fixes
+required by the plugin's supported dependency range.
+
+The workspace overrides in `pnpm-workspace.yaml` secure this repository's
+transitive dependencies. They are not included in the published plugin;
+consuming applications should audit their own lockfiles after upgrading.
+
 ## Brand URL Model
 
 Brands own their URL namespace through the localized `rootPath` field. Use
