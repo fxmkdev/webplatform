@@ -4,7 +4,7 @@ A template repo to create a [Payload CMS](https://payloadcms.com) plugin.
 
 ## Dependency Requirements
 
-Use Next.js `>=16.3.8 <17.0.0` and Payload CMS `^3.90.2`, with matching
+Use Next.js `>=16.4.1 <17.0.0` and Payload CMS `^3.90.2`, with matching
 `@payloadcms/*` package versions. These minimum versions include security fixes
 required by the plugin's supported dependency range.
 
