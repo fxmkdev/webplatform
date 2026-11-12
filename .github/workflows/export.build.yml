@@ -228,7 +228,8 @@ jobs:
   e2e-tests:
     name: End-to-End Tests
     timeout-minutes: 60
-    runs-on: ubuntu-latest
+    # Pin Ubuntu for Playwright Chromium compatibility.
+    runs-on: ubuntu-24.04
     needs: [populate-cms-types, version, frontend-build-push, cms-build-push]
     env:
       CMS_API_KEY: e2e-tests-apikey
@@ -276,11 +277,10 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           key:
-            ${{ runner.os }}-playwright-${{
+            ${{ runner.os }}-ubuntu-24.04-${{ runner.arch }}-playwright-${{
             steps.playwright-version.outputs.playwright_version }}
       - name: Install Playwright dependencies
         run: pnpm playwright install --with-deps chromium
-        if: steps.playwright-cache.outputs.cache-hit != 'true'
         working-directory: tests/e2e
       - name: Download CMS types
         uses: actions/download-artifact@v8
